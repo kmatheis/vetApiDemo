@@ -1,6 +1,7 @@
 package com.kmatheis.vet.service;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import javax.naming.AuthenticationException;
 
@@ -30,9 +31,11 @@ public class AuthService {
 		
 		if ( BCrypt.checkpw( loginRequest.getPassword(), foundUser.getHash() ) ) {
 			log.debug( "User {} found!", username );
+
 			return null;
 		}
 		
 		throw new AuthenticationException( "Incorrect username or password." );
+		// return Optional.ofNullable( null );
 	}
 }

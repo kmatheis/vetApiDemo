@@ -1,5 +1,6 @@
 package com.kmatheis.vet.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Nested;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
@@ -30,7 +32,7 @@ class FetchUsersTest extends FetchUsersTestSupport {
 
 	@Test
 	void test() {
-		String body = "{ \"username\": \"vetroot\", \"password\": \"root\" }";
+		String body = "{ \"username\": \"vetrootyyyyy\", \"password\": \"root\" }";
 		String uri = getBaseUriForUsers() + "/login";
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -41,6 +43,7 @@ class FetchUsersTest extends FetchUsersTestSupport {
 		ResponseEntity<UserReply> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, UserReply.class );
 		
 		// now assert things
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
 	}
 
 }

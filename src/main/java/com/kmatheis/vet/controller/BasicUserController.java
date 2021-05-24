@@ -1,5 +1,7 @@
 package com.kmatheis.vet.controller;
 
+import javax.naming.AuthenticationException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,12 +19,12 @@ public class BasicUserController implements UserController {
 	private AuthService authService;
 	
 	@Override
-	public UserReply login( LoginRequest loginRequest ) {
+	public UserReply login( LoginRequest loginRequest ) throws AuthenticationException {
 		log.debug( "LoginRequest={}", loginRequest );
-		try {
-			return authService.login( loginRequest );
-		} catch ( Exception e ) {
-			return null;
-		}
+		// try {
+		return authService.login( loginRequest );
+		// } catch ( Exception e ) {
+		// 	return null;
+		// }
 	}
 }

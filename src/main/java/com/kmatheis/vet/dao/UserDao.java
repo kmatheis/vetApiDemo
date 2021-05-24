@@ -33,7 +33,7 @@ public class UserDao {
 	class UserResultSetExtractor implements ResultSetExtractor<User> {
 		@Override
 		public User extractData( ResultSet rs ) throws SQLException, DataAccessException {
-			rs.next();
+			rs.next();  // TODO: might not get anything back, so this is bad
 			return User.builder()
 					.id( rs.getLong( "id" ) )
 					.username( rs.getString( "username" ) )

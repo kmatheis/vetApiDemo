@@ -1,5 +1,7 @@
 package com.kmatheis.vet.controller;
 
+import javax.naming.AuthenticationException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +17,6 @@ public interface UserController {
 	
 	@PostMapping( "/login" )
 	@ResponseStatus( code = HttpStatus.OK )
-	UserReply login( @RequestBody LoginRequest loginRequest );
+	UserReply login( @RequestBody LoginRequest loginRequest ) throws AuthenticationException;
 
 }
