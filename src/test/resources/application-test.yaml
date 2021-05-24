@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:vet_api_demo
+
+logging:
+    level:
+        root: warn
+        '[com.kmatheis.vet]': debug
