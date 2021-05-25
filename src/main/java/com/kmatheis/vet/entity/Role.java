@@ -5,10 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class User {
+public class Role {
 	private Long id;
-	private String username;
-	private String hash;
-	private Long roleId;
+	private String rolename;
 }
-

@@ -31,19 +31,51 @@ import com.kmatheis.vet.entity.UserReply;
 class FetchUsersTest extends FetchUsersTestSupport {
 
 	@Test
-	void test() {
-		String body = "{ \"username\": \"vetrootyyyyy\", \"password\": \"root\" }";
+	void testValidLogin() {
+		// Given: valid login credentials
+		String body = "{ \"username\": \"vetroot\", \"password\": \"root\" }";
 		String uri = getBaseUriForUsers() + "/login";
 		
+		// When: the user logs in
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType( MediaType.APPLICATION_JSON );
-		
 		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
-		
 		ResponseEntity<UserReply> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, UserReply.class );
 		
-		// now assert things
+		// Then: we return an OK status along with a JWT
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
+	}
+	
+	@Test
+	void testInvalidLoginUsername() {
+		// Given: invalid login username
+		String body = "{ \"username\": \"vetrootbeer\", \"password\": \"root\" }";
+		String uri = getBaseUriForUsers() + "/login";
+		
+		// When: the user logs in
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<UserReply> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, UserReply.class );
+		
+		// Then: we return a NOT FOUND status (404)
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.NOT_FOUND );
+	}
+	
+	@Test
+	void testInvalidLoginPassword() {
+		// Given: invalid login password
+		String body = "{ \"username\": \"vetroot\", \"password\": \"rootbeer\" }";
+		String uri = getBaseUriForUsers() + "/login";
+		
+		// When: the user logs in
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<UserReply> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, UserReply.class );
+		
+		// Then: we return an UNAUTHORIZED status (401)
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.UNAUTHORIZED );
 	}
 
 }
