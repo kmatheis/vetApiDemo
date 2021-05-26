@@ -84,4 +84,18 @@ public class UserDao {
 		
 		return roles.get( 0 );
 	}
+	
+	public List<String> fetchPrivs( long roleId ) {
+		String sql = "select * from privs where role_id = :role_id";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "role_id", roleId );
+		return jdbcTemplate.query( sql, params, 
+			new RowMapper<String>() {
+				@Override
+				public String mapRow( ResultSet rs, int rowNum ) throws SQLException {
+					return rs.getString( "description" );
+				}
+			}
+		);
+	}
 }

@@ -60,12 +60,19 @@ public class AuthService {
 			
 			Role role = userDao.fetchRole( foundUser.getRoleId() );
 			
+			List<String> privList = userDao.fetchPrivs( foundUser.getRoleId() );
+			
+			String privs = String.join( ",", privList );
+			
 			String jwt = Jwts.builder()
 							.claim( "role", role.getRolename() )
-							.setSubject( "VET API" )
-							.setExpiration( new Date( System.currentTimeMillis() + 3600000 ) )
+							.claim( "privs", privs )
+							.setSubject( "VET API DEMO" )
+							.setExpiration( new Date( System.currentTimeMillis() + 3600000 ) )  // One hour
 							.signWith( ServerKey.workingKey )
 							.compact();
+			
+			log.debug( "jwt returned is {}", jwt );
 			
 			UserReply out = UserReply.builder()
 							.user( foundUser )

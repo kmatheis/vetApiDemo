@@ -18,7 +18,13 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 
 import com.kmatheis.vet.controller.support.FetchUsersTestSupport;
+import com.kmatheis.vet.entity.ServerKey;
+import com.kmatheis.vet.entity.User;
 import com.kmatheis.vet.entity.UserReply;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jwts;
 
 
 // @Nested  // When JUnit 5 finds this, will create a new application context.
@@ -31,7 +37,7 @@ import com.kmatheis.vet.entity.UserReply;
 class FetchUsersTest extends FetchUsersTestSupport {
 
 	@Test
-	void testValidLogin() {
+	void testValidSuperuserLogin() {
 		// Given: valid login credentials
 		String body = "{ \"username\": \"vetroot\", \"password\": \"root\" }";
 		String uri = getBaseUriForUsers() + "/login";
@@ -44,6 +50,17 @@ class FetchUsersTest extends FetchUsersTestSupport {
 		
 		// Then: we return an OK status along with a JWT
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
+		UserReply actual = response.getBody();
+		assertThat( actual.getUser().getUsername() ).isEqualTo( "vetroot" );
+		assertThat( actual.getUser().getRoleId() ).isEqualTo( 1 );
+		String[] parts = actual.getJwt().split( "\\." );  // since input is interpreted as a regex
+		assertThat( parts ).hasSize( 3 );		         
+					         
+		Claims claims = Jwts.parser().setSigningKey( ServerKey.workingKey ).parseClaimsJws( actual.getJwt() ).getBody();
+		assertThat( claims.getSubject() ).isEqualTo( "VET API DEMO" );
+		assertThat( claims.get( "role" ) ).isEqualTo( "ADMIN" );
+		// System.out.println( claims.get( "privs" ) );
+		assertThat( ( (String)claims.get( "privs" ) ).indexOf( "all users" ) ).isGreaterThan( -1 );
 	}
 	
 	@Test
