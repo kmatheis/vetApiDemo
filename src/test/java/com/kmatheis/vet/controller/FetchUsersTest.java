@@ -3,10 +3,13 @@ package com.kmatheis.vet.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -93,6 +96,20 @@ class FetchUsersTest extends FetchUsersTestSupport {
 		
 		// Then: we return an UNAUTHORIZED status (401)
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.UNAUTHORIZED );
+	}
+	
+	@Test
+	void testObtainUsersFromAdmin() {
+		// Given: admin credentials
+		// When: that admin logs in and later requests all users
+		String uri = getBaseUriForUsers();
+		HttpEntity<String> bodyEntity = obtainJwtBodyEntityFromValidLogin( "vetroot", "root" );
+		ResponseEntity<List<User>> response = getRestTemplate().exchange( uri, HttpMethod.GET, bodyEntity, new ParameterizedTypeReference<>() {} );
+		
+		// Then: we return OK (200) with a list of users
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
+		List<User> actual = response.getBody();
+		// TODO: get users
 	}
 
 }

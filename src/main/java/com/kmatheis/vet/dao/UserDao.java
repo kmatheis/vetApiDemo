@@ -98,4 +98,22 @@ public class UserDao {
 			}
 		);
 	}
+	
+	public List<User> fetchUsers() {
+		String sql = "select * from users";
+		return jdbcTemplate.query( sql, 
+				new RowMapper<User>() {
+					@Override
+					public User mapRow( ResultSet rs, int rowNum ) throws SQLException {
+						return User.builder()
+								.id( rs.getLong( "id" ) )
+								.username( rs.getString( "username" ) )
+								.hash( rs.getString( "hash" ) )
+								.roleId( rs.getLong( "role_id" ) )
+								.build();
+					}
+				}
+		);
+		
+	}
 }
