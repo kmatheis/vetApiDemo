@@ -3,6 +3,7 @@ package com.kmatheis.vet.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Nested;
@@ -98,19 +99,37 @@ class FetchUsersTest extends FetchUsersTestSupport {
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.UNAUTHORIZED );
 	}
 	
+	// NOTE: SpringBoot seems to have a real problem with bodies in GET requests. Specifically, it will set the body to null
+	//       before passing it off to the controller, and if the controller is expecting a body, it becomes null and you wind up
+	//       with "Required REST body is missing" errors.
+	
+	// The following helps with this problem, 
+	//   https://mekaso.rocks/get-requests-with-a-request-body-spring-resttemplate-vs-apache-httpclient
+	//   but maybe instead, when logging in, there is a way to send back the jwt as an Authorization header in the response,
+	//   and subsequent requests may be able to send that token in a header.
+	//   In Postman, will need to set Authorization > Bearer Token to the relevant JWT.
+	
 	@Test
 	void testObtainUsersFromAdmin() {
 		// Given: admin credentials
 		// When: that admin logs in and later requests all users
-		String uri = getBaseUriForUsers();
-		HttpEntity<String> bodyEntity = obtainJwtBodyEntityFromValidLogin( "vetroot", "root" );
-		System.out.println( bodyEntity );
-		ResponseEntity<List<User>> response = getRestTemplate().exchange( uri, HttpMethod.GET, bodyEntity, new ParameterizedTypeReference<List<User>>() {} );
-		System.out.println( "here 4" );
+
 		// Then: we return OK (200) with a list of users
 		// assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
-		// List<User> actual = response.getBody();
-		// System.out.println( actual );
+		
+		// The following sequence is confirmed to work, and also works in Postman.
+		String jwt = obtainJwtFromValidLogin( "vetroot", "root" );
+		String uri = getBaseUriForUsers();
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		// headers.setAccept( Collections.singletonList( MediaType.APPLICATION_JSON ) );
+	    headers.add( "User-Agent", "Spring's RestTemplate" );  // value can be whatever
+	    headers.add( "Authorization", "Bearer " + jwt );		
+		ResponseEntity<List<User>> response2 = getRestTemplate().exchange( uri, HttpMethod.GET, new HttpEntity<>( "parameters", headers ), new ParameterizedTypeReference<>() {} );
+		System.out.println( response2 );
+		List<User> users = response2.getBody();
+		System.out.println( users );
 		
 	}
 
