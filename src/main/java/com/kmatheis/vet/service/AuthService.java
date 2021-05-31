@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import javax.naming.AuthenticationException;
 
@@ -77,7 +76,7 @@ public class AuthService {
 							.compact();
 			
 			// log.debug( "jwt returned is {}", jwt );
-			
+
 			UserReply out = UserReply.builder()
 							.user( foundUser )
 							.jwt( jwt )
@@ -138,5 +137,9 @@ public class AuthService {
 		}
 		
 		return true;
+	}
+
+	public String bearerToJwt( String bearerJwt ) {
+		return bearerJwt.substring( bearerJwt.indexOf( " " ) + 1 );
 	}
 }

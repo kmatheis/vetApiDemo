@@ -5,6 +5,7 @@ import java.util.List;
 import javax.naming.AuthenticationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -29,21 +30,26 @@ public class BasicUserController implements UserController {
 	@Autowired
 	private UserService userService;
 	
+	// Deprecated but remains for reference.
+//	@Override
+//	public UserReply loginOld( LoginRequest loginRequest ) throws AuthenticationException {
+//		// log.debug( "LoginRequest={}", loginRequest );
+//		return authService.login( loginRequest );
+//	}
+
 	@Override
-	public UserReply login( LoginRequest loginRequest ) throws AuthenticationException {
+	public ResponseEntity<User> login( LoginRequest loginRequest ) throws AuthenticationException {
 		// log.debug( "LoginRequest={}", loginRequest );
-		return authService.login( loginRequest );
+		UserReply ur = authService.login( loginRequest ); 
+		HttpHeaders headers = new HttpHeaders();
+		headers.add( "Authorization", ur.getJwt() );
+		return new ResponseEntity<User>( ur.getUser(), headers, HttpStatus.OK );
 	}
 	
-//	@Override
-//	public List<User> getUsers( JwtDto jwtdto ) throws AuthenticationException {
-//		log.debug( "In getUsers, input is {}", jwtdto.getJwt() );
-//		return userService.getUsers( jwtdto.getJwt() );
-//	}
-	
-	public ResponseEntity<List<User>> getUsers2( @RequestHeader( "Authorization" ) String bearerJwt ) throws AuthenticationException {
-		log.debug( "In getUsers2, Authorization header is {}", bearerJwt );
-		List<User> users = userService.getUsers( bearerJwt.substring( bearerJwt.indexOf( " " ) + 1 ) );  // clean this up later
-		return new ResponseEntity<List<User>>( users, HttpStatus.OK );
+	@Override
+	public List<User> getUsers( @RequestHeader( "Authorization" ) String bearerJwt ) throws AuthenticationException {
+		log.debug( "In getUsers, Authorization header is {}", bearerJwt );
+		List<User> users = userService.getUsers( authService.bearerToJwt( bearerJwt ) );
+		return users;
 	}
 }

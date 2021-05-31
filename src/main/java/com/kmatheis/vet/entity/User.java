@@ -19,12 +19,9 @@ public class User {
 	private String hash;
 	private Long roleId;     
 	
-	private String jwt;
-	
-	@Transient
 	@JsonIgnore
-	public String getJwt() {
-		return jwt;
+	public String getHash() {
+		return hash;
 	}
 }
 
