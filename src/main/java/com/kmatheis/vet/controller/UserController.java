@@ -58,7 +58,7 @@ public interface UserController {
 		responses = {
 			@ApiResponse( 
 				responseCode = "200", description = "The users are returned", 
-				content = @Content( mediaType = "application/json", schema = @Schema( implementation = User.class ) ) ),
+				content = @Content( mediaType = "application/json", schema = @Schema( ref = "#/components/schemas/UserList" ) ) ), // implementation = User.class
 			@ApiResponse( 
 				responseCode = "401", description = "User is not authorized to perform this", 
 				content = @Content( mediaType = "application/json" ) ),
