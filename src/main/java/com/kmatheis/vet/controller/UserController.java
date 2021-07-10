@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.kmatheis.vet.entity.LoginRequest;
@@ -20,8 +21,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-
-@RequestMapping( "/users" )
 
 public interface UserController {
 	
@@ -48,7 +47,7 @@ public interface UserController {
 				content = @Content( mediaType = "application/json" ) )
 		}
 	)
-	@PostMapping( "/login" )
+	@PostMapping( "/users/login" )
 	@ResponseStatus( code = HttpStatus.OK )
 	ResponseEntity<User> login( @RequestBody LoginRequest loginRequest ) throws AuthenticationException;
 	
@@ -70,7 +69,31 @@ public interface UserController {
 				content = @Content( mediaType = "application/json" ) )
 		}
 	)
-	@GetMapping
-	public List<User> getUsers( @RequestHeader( "Authorization" ) String jwt ) throws AuthenticationException;
+	@GetMapping( "/users" )
+	public List<User> getUsers( @RequestHeader( "Authorization" ) String bearerJwt ) throws AuthenticationException;
+	
+	@Operation(
+		summary = "Returns a list of some users",
+		description = "Returns a list of some users in the system whose name contains a given string. Only ADMIN role may do this.",
+		responses = {
+			@ApiResponse( 
+				responseCode = "200", description = "The users are returned", 
+				content = @Content( mediaType = "application/json", schema = @Schema( ref = "#/components/schemas/UserList" ) ) ), // implementation = User.class
+			@ApiResponse( 
+				responseCode = "401", description = "User is not authorized to perform this", 
+				content = @Content( mediaType = "application/json" ) ),
+			@ApiResponse( 
+				responseCode = "404", description = "The users do not exist", 
+				content = @Content( mediaType = "application/json" ) ),
+			@ApiResponse( 
+				responseCode = "500", description  = "An unplanned error occurred", 
+				content = @Content( mediaType = "application/json" ) )
+		}
+	)
+	@GetMapping( "/someusers" )
+	public List<User> getSomeUsers( 
+		@RequestHeader( "Authorization" ) String bearerJwt,
+		@RequestParam( required = false ) String nameContains
+	) throws AuthenticationException;
 	
 }

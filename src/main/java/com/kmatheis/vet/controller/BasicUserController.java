@@ -11,10 +11,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kmatheis.vet.entity.JwtDto;
 import com.kmatheis.vet.entity.LoginRequest;
 import com.kmatheis.vet.entity.User;
-import com.kmatheis.vet.entity.UserReply;
+import com.kmatheis.vet.internal.UserReply;
 import com.kmatheis.vet.service.AuthService;
 import com.kmatheis.vet.service.UserService;
 
@@ -52,4 +51,12 @@ public class BasicUserController implements UserController {
 		List<User> users = userService.getUsers( authService.bearerToJwt( bearerJwt ) );
 		return users;
 	}
+
+	@Override
+	public List<User> getSomeUsers( String bearerJwt, String nameContains ) throws AuthenticationException {
+		log.debug( "In getSomeUsers, Authorization header is {}", bearerJwt );
+		List<User> users = userService.getSomeUsers( authService.bearerToJwt( bearerJwt ), nameContains );
+		return users;
+	}
+
 }

@@ -1,4 +1,6 @@
-package com.kmatheis.vet.entity;
+package com.kmatheis.vet.internal;
+
+import com.kmatheis.vet.entity.User;
 
 import lombok.Builder;
 import lombok.Data;

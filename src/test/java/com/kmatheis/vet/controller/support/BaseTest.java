@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
-import com.kmatheis.vet.entity.UserReply;
+import com.kmatheis.vet.internal.UserReply;
 
 import lombok.Getter;
 
@@ -29,6 +29,10 @@ public class BaseTest {
 	
 	protected String getBaseUriForUsers() {  // URI of the request that will be sent to the application
 		return String.format( "http://localhost:%d/users" , serverPort );
+	}
+	
+	protected String getBaseUriForSomeUsers() {  // URI of the request that will be sent to the application
+		return String.format( "http://localhost:%d/someusers" , serverPort );
 	}
 	
 //	protected String obtainJwtFromValidLogin( String username, String password ) {  // Deprecated but remains for reference
@@ -50,6 +54,17 @@ public class BaseTest {
 		ResponseEntity<UserReply> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, UserReply.class );
 		return response.getHeaders().get( "Authorization" ).get( 0 );
 	}	
+	
+	// Logs in the user and returns correct headers to be passed to a subsequent exchange() call.
+	protected HttpHeaders obtainHeadersFromValidLogin( String username, String password ) {
+		String jwt = obtainJwtFromValidLoginAuthHeader( "vetroot", "root" );
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		// headers.setAccept( Collections.singletonList( MediaType.APPLICATION_JSON ) );
+	    headers.add( "User-Agent", "Spring's RestTemplate" );  // value can be whatever
+	    headers.add( "Authorization", "Bearer " + jwt );
+	    return headers;
+	}
 	
 	protected void assertErrorMessageValid( Map<String, Object> error, HttpStatus status ) {
 		assertThat( error )

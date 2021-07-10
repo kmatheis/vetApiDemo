@@ -30,4 +30,11 @@ public class UserService {
 		log.debug( "getUsers auth is successful!" );
 		return userDao.fetchUsers();
 	}
+
+	public List<User> getSomeUsers( String jwt, String nameContains ) throws AuthenticationException {
+		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "read users" ) );
+		authService.authorize( jwt, neededPrivs );
+		log.debug( "getSomeUsers auth is successful!" );
+		return userDao.fetchSomeUsers( nameContains );
+	}
 }

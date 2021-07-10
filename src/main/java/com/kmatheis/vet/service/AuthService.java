@@ -22,7 +22,7 @@ import com.kmatheis.vet.entity.LoginRequest;
 import com.kmatheis.vet.entity.Role;
 import com.kmatheis.vet.entity.ServerKey;
 import com.kmatheis.vet.entity.User;
-import com.kmatheis.vet.entity.UserReply;
+import com.kmatheis.vet.internal.UserReply;
 
 import lombok.extern.slf4j.Slf4j;
 

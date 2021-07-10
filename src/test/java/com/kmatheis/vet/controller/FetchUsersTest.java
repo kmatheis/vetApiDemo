@@ -137,9 +137,9 @@ class FetchUsersTest extends FetchUsersTestSupport {
 		//       before passing it off to the controller, and if the controller is expecting a body, it becomes null and you wind up
 		//       with "Required REST body is missing" errors.
 		
-		//   The following helps with this problem, 
+		//   If we wanted to implement a GraphQL API, the following helps with this problem: 
 		//   https://mekaso.rocks/get-requests-with-a-request-body-spring-resttemplate-vs-apache-httpclient
-		//   if we wanted to implement a GraphQL API. However, this is a REST API.
+		//   However, this is a REST API.
 		//   So, instead, when logging in, there is a way to send back the jwt as an Authorization header in the response,
 		//   and subsequent requests may be able to send that token in a header.
 		//   When testing in Postman, one will need to set Authorization > Bearer Token to the relevant JWT that is returned in the Authorization header.
@@ -148,13 +148,8 @@ class FetchUsersTest extends FetchUsersTestSupport {
 		void testObtainUsersFromAdmin() {
 			// Given: admin credentials
 			// When: that admin logs in and later requests all users
-			String jwt = obtainJwtFromValidLoginAuthHeader( "vetroot", "root" );
+		    HttpHeaders headers = obtainHeadersFromValidLogin( "vetroot", "root" );
 			String uri = getBaseUriForUsers();
-			HttpHeaders headers = new HttpHeaders();
-			headers.setContentType( MediaType.APPLICATION_JSON );
-			// headers.setAccept( Collections.singletonList( MediaType.APPLICATION_JSON ) );
-		    headers.add( "User-Agent", "Spring's RestTemplate" );  // value can be whatever
-		    headers.add( "Authorization", "Bearer " + jwt );		
 			ResponseEntity<List<User>> response = getRestTemplate().exchange( uri, HttpMethod.GET, new HttpEntity<>( "parameters", headers ), new ParameterizedTypeReference<>() {} );
 			
 			// Then: we return OK (200) with a list of users
@@ -163,8 +158,27 @@ class FetchUsersTest extends FetchUsersTestSupport {
 			assertThat( users ).hasSizeGreaterThanOrEqualTo( 1 );
 			assertThat( users.get( 0 ).getUsername().equals( "vetroot" ) );
 		}
+		
+		// TODO: Need more finesse to handle stored procedures vis-a-vis an H2 DB. 
+		//   For now, the /someusers call currently employs simple SQL instead of a stored procedure.
+		@Test
+		void testObtainSomeUsersFromAdmin() {
+			// Given: admin credentials
+			// When: that admin logs in and later requests users with "root" in their name
+		    HttpHeaders headers = obtainHeadersFromValidLogin( "vetroot", "root" );
+			String uri = String.format( "%s?namecontains=%s", getBaseUriForSomeUsers(), "root" );
+			ResponseEntity<List<User>> response = getRestTemplate().exchange( uri, HttpMethod.GET, new HttpEntity<>( "parameters", headers ), new ParameterizedTypeReference<>() {} );
+			
+			// Then: we return OK (200) with a list of users
+			assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
+			List<User> users = response.getBody();
+			assertThat( users ).hasSizeGreaterThanOrEqualTo( 1 );
+			assertThat( users.get( 0 ).getUsername().equals( "vetroot" ) );
+		}
+		
 	}
 	
+	// TODO: Mockito fails here. Need to fix this.
 	/*
 	@Nested
 	@SpringBootTest( webEnvironment = WebEnvironment.RANDOM_PORT )
