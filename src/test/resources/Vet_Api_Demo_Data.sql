@@ -22,23 +22,13 @@ insert into privs( description, role_id ) values( 'add owners', 2 );
 insert into privs( description, role_id ) values( 'edit owners', 2 );
 insert into privs( description, role_id ) values( 'read owners', 2 );
 insert into privs( description, role_id ) values( 'all reservations', 2 );
+insert into privs( description, role_id ) values( 'all comments', 3 );
 insert into privs( description, role_id ) values( 'del animals', 3 );
 
--- Users (should never be deleteable nor modifiable)
+-- Users (the following should never be deleteable nor modifiable)
 insert into users( username, hash, role_id ) values( 'vetroot', '$2a$10$3jdN5MqO9tWHjTO8JGhU8.ACs9TloXqR.YjCB84d8SOB1USzSYV5.', 1 );
 insert into users( username, hash, role_id ) values( 'vetrec', '$2a$10$SBYd3h17NqVt3BrM5XJ87ugPDFC5YmtKCqbvNf5X8UdVweR1/Hooi', 2 );
 insert into users( username, hash, role_id ) values( 'vettech', '$2a$10$1TJR8h8zG8RoXSEysfehJe7qbcluEzJZxUkO09UTUL.HZezaGwZRi', 3 );
-
--- Procs (H2 has an issue with stored procedures)
-
--- delimiter $$
--- drop procedure if exists find_users$$
--- create procedure find_users( in str varchar( 40 ) )
--- begin 
---  select * from users where username like concat( '%', str, '%' ) order by id; 
--- end
--- $$
--- delimiter ;
 
 -- Rooms
 insert into rooms( id, name, maxcap, cost ) values( 101, 'Gray Brick House', 1, 50.00 );
@@ -71,3 +61,14 @@ insert into reservations values( 4, 1, '2021-06-11', '2021-06-15', 0 );
 insert into reservations values( 1, 6, '2021-04-01', '2021-04-05', 0 );
 insert into reservations values( 2, 6, '2021-04-01', '2021-04-05', 0 );
 insert into reservations values( 3, 6, '2021-04-01', '2021-04-05', 0 );
+
+-- Procs (H2 has an issue with stored procedures)
+
+-- delimiter $$
+-- drop procedure if exists find_users$$
+-- create procedure find_users( in str varchar( 40 ) )
+-- begin 
+--  select * from users where username like concat( '%', str, '%' ) order by id; 
+-- end
+-- $$
+-- delimiter ;

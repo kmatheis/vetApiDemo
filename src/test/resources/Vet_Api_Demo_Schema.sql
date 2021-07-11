@@ -1,3 +1,4 @@
+drop table if exists comments;
 drop table if exists reservations;
 drop table if exists owners;
 drop table if exists animals;
@@ -87,4 +88,14 @@ create table if not exists reservations (
     foreign key ( animal_fk ) references animals ( pk ) on delete cascade,
     foreign key ( room_fk ) references rooms( pk ) on delete cascade,
     unique key ( animal_fk, room_fk, fromdate )
+);
+
+create table if not exists comments (
+    pk int unsigned not null auto_increment,
+    id int unsigned not null,
+    created datetime not null default now(),
+    type enum( 'OTHER', 'VAX', 'CHECKUP', 'SURGERY' ),
+    animal_fk int unsigned not null,
+    primary key( pk ),
+    foreign key ( animal_fk ) references animals( pk ) on delete cascade
 );

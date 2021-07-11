@@ -184,7 +184,7 @@ public class UserDao {
 		}
 	}
 	
-	private Optional<Role> fetchRoleByName( String rolename ) {
+	public Optional<Role> fetchRoleByName( String rolename ) {
 		String sql = "select * from roles where UPPER( rolename ) = :rolename";
 		Map<String, Object> params = new HashMap<>();
 		params.put( "rolename", rolename.toUpperCase() );
@@ -205,21 +205,42 @@ public class UserDao {
 		}
 	}
 
-	public String addUser( UserDescription description ) {
-		String rolename = description.getRolename();
-		Role role = fetchRoleByName( rolename ).orElseThrow( () -> new NoSuchElementException( "Role with name " + rolename + " not found." ) );
+	public String addUser( String username, String password, Long roleId ) {
 		String sql = "insert into users ( username, hash, role_id ) values ( :username, :hash, :role_id )";
 		Map<String, Object> params = new HashMap<>();
-		params.put( "username", description.getUsername() );
-		String hash = BCrypt.hashpw( description.getPassword(), BCrypt.gensalt() );
+		params.put( "username", username );
+		String hash = BCrypt.hashpw( password, BCrypt.gensalt() );
 		// log.debug( "hash of password {} is {}", description.getPassword(), hash );
 		params.put( "hash", hash );
-		params.put( "role_id", role.getId() );
+		params.put( "role_id", roleId );
 		int status = npJdbcTemplate.update( sql, params );
 		if ( status == 0 ) {
-			throw new IllegalAttemptException( "User with name " + description.getUsername() + " already exists." );
+			throw new IllegalAttemptException( "General failure to add user." );
 		} else {
 			return ( "Successfully added user." );  // really should return the actual User here
+		}
+	}
+
+	public Optional<User> fetchUserById( Long id ) {
+		String sql = "select * from users where id = :id";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "id", id );
+		return npJdbcTemplate.query( sql, params, new UserResultSetExtractor() );
+	}
+	
+	public String modifyUser( Long id, String username, String password, Long roleId ) {
+		String sql = "update users set username = :username, hash = :hash, role_id = :role_id where id = :id";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "id", id );
+		params.put( "username", username );
+		String hash = BCrypt.hashpw( password, BCrypt.gensalt() );
+		params.put( "hash", hash );
+		params.put( "role_id", roleId );
+		int status = npJdbcTemplate.update( sql, params );
+		if ( status == 0 ) {
+			throw new IllegalAttemptException( "General failure to update user." );
+		} else {
+			return ( "Successfully modified user." );  // idem.
 		}
 	}
 }

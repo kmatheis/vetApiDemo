@@ -3,8 +3,10 @@ package com.kmatheis.vet.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.core.ParameterizedTypeReference;
@@ -19,6 +21,9 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 
 import com.kmatheis.vet.controller.support.ModifyUsersTestSupport;
+import com.kmatheis.vet.dao.UserDao;
+import com.kmatheis.vet.entity.Role;
+import com.kmatheis.vet.entity.User;
 
 @SpringBootTest( webEnvironment = WebEnvironment.RANDOM_PORT )
 @ActiveProfiles( "test" )  // looks for application-test.yaml in src/test/resources
@@ -27,6 +32,9 @@ import com.kmatheis.vet.controller.support.ModifyUsersTestSupport;
     "classpath:Vet_Api_Demo_Data.sql" }, 
     config = @SqlConfig( encoding = "utf-8" ) )
 public class ModifyUsersTest extends ModifyUsersTestSupport {
+	
+	@Autowired
+	UserDao userDao;
 
 	@Test
 	void testAttemptToDeleteSuperuser() {
@@ -110,5 +118,35 @@ public class ModifyUsersTest extends ModifyUsersTestSupport {
 		
 		// Then: we return UNAUTHORIZED (401)
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.UNAUTHORIZED );
+	}
+	
+	@Test
+	void testModifyingUser() {
+		// Given: admin credentials
+		// When: that admin logs in, creates a user...
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetroot", "root" );
+		String uri = String.format( "%s", getBaseUriForUsers() );
+		String body = "{ \"username\": \"anadmin\", \"password\": \"anadmin\", \"rolename\": \"ADMIN\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<String> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, String.class );
+		// ...and modifies that user
+		Optional<User> oUser = userDao.fetchUser( "anadmin" );
+		assertThat( oUser.isPresent() ).isEqualTo( true );
+		User user = oUser.get();
+		uri = String.format( "%s/%s", getBaseUriForUsers(), user.getId() );
+		body = "{ \"username\": \"arec\", \"password\": \"arec\", \"rolename\": \"RECEPTIONIST\" }";
+		bodyEntity = new HttpEntity<>( body, headers );
+		response = getRestTemplate().exchange( uri, HttpMethod.PUT, bodyEntity, String.class );
+		
+		// Then: we return OK with the user successfully modified
+		assertThat( response.getBody() ).isEqualTo( "Successfully modified user." );
+		oUser = userDao.fetchUser( "arec" );
+		assertThat( oUser.isPresent() ).isEqualTo( true );
+		user = oUser.get();
+		Optional<Role> oRole = userDao.fetchRoleByName( "RECEPTIONIST" );
+		assertThat( oRole.isPresent() ).isEqualTo( true );
+		Role role = oRole.get();
+		assertThat( user.getRoleId() ).isEqualTo( role.getId() );
 	}
 }

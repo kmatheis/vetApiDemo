@@ -49,28 +49,33 @@ public class BasicUserController implements UserController {
 	
 	@Override
 	public List<User> getUsers( @RequestHeader( "Authorization" ) String bearerJwt ) throws AuthenticationException {
-		log.debug( "In getUsers, Authorization header is {}", bearerJwt );
+		// log.debug( "In getUsers, Authorization header is {}", bearerJwt );
 		List<User> users = userService.getUsers( authService.bearerToJwt( bearerJwt ) );
 		return users;
 	}
 
 	@Override
 	public List<User> getSomeUsers( String bearerJwt, String nameContains ) throws AuthenticationException {
-		log.debug( "In getSomeUsers, Authorization header is {}", bearerJwt );
+		// log.debug( "In getSomeUsers, Authorization header is {}", bearerJwt );
 		List<User> users = userService.getSomeUsers( authService.bearerToJwt( bearerJwt ), nameContains );
 		return users;
 	}
 	
 	@Override
 	public String deleteUser( String bearerJwt, Long id ) throws AuthenticationException, IllegalAttemptException {
-		log.debug( "In deleteUser, Authorization header is {}", bearerJwt );
+		// log.debug( "In deleteUser, Authorization header is {}", bearerJwt );
 		return userService.deleteUser( authService.bearerToJwt( bearerJwt ), id );
 	}
 
 	@Override
 	public String addUser( String bearerJwt, UserDescription description ) throws AuthenticationException {
-		log.debug( "In addUser, Authorization header is {}", bearerJwt );
+		// log.debug( "In addUser, Authorization header is {}", bearerJwt );
 		return userService.addUser( authService.bearerToJwt( bearerJwt ), description );
+	}
+
+	@Override
+	public String modifyUser( String bearerJwt, Long id, UserDescription description ) throws AuthenticationException {
+		return userService.modifyUser( authService.bearerToJwt( bearerJwt ), id, description );
 	}
 
 }

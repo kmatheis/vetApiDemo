@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -113,6 +114,14 @@ public interface UserController {
 	@ResponseStatus( code = HttpStatus.OK )
 	public String addUser(
 			@RequestHeader( "Authorization" ) String bearerJwt,
+			@RequestBody UserDescription description
+	) throws AuthenticationException;
+	
+	@PutMapping( "/users/{id}" )
+	@ResponseStatus( code = HttpStatus.OK )
+	public String modifyUser(
+			@RequestHeader( "Authorization" ) String bearerJwt,
+			@PathVariable Long id,
 			@RequestBody UserDescription description
 	) throws AuthenticationException;
 }
