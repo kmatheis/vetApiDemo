@@ -11,8 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kmatheis.vet.dto.UserDescription;
 import com.kmatheis.vet.entity.LoginRequest;
 import com.kmatheis.vet.entity.User;
+import com.kmatheis.vet.exception.IllegalAttemptException;
 import com.kmatheis.vet.internal.UserReply;
 import com.kmatheis.vet.service.AuthService;
 import com.kmatheis.vet.service.UserService;
@@ -57,6 +59,18 @@ public class BasicUserController implements UserController {
 		log.debug( "In getSomeUsers, Authorization header is {}", bearerJwt );
 		List<User> users = userService.getSomeUsers( authService.bearerToJwt( bearerJwt ), nameContains );
 		return users;
+	}
+	
+	@Override
+	public String deleteUser( String bearerJwt, Long id ) throws AuthenticationException, IllegalAttemptException {
+		log.debug( "In deleteUser, Authorization header is {}", bearerJwt );
+		return userService.deleteUser( authService.bearerToJwt( bearerJwt ), id );
+	}
+
+	@Override
+	public String addUser( String bearerJwt, UserDescription description ) throws AuthenticationException {
+		log.debug( "In addUser, Authorization header is {}", bearerJwt );
+		return userService.addUser( authService.bearerToJwt( bearerJwt ), description );
 	}
 
 }

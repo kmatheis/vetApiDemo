@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +17,14 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
+import com.kmatheis.vet.dto.UserDescription;
 import com.kmatheis.vet.entity.Role;
 import com.kmatheis.vet.entity.ServerKey;
 import com.kmatheis.vet.entity.User;
+import com.kmatheis.vet.exception.IllegalAttemptException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -166,5 +170,56 @@ public class UserDao {
 //		Map<String, Object> map = simpleJdbcCall.execute( in );
 //		return (List<User>) map.get( "dausers" );
 		
+	}
+
+	public String deleteUser( Long id ) {
+		String sql = "delete from users where id = :id";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "id", id );
+		int status = npJdbcTemplate.update( sql, params );
+		if ( status == 0 ) {
+			throw new NoSuchElementException( "User with id " + id + " does not exist." );
+		} else {
+			return ( "Successfully deleted user " + id );
+		}
+	}
+	
+	private Optional<Role> fetchRoleByName( String rolename ) {
+		String sql = "select * from roles where UPPER( rolename ) = :rolename";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "rolename", rolename.toUpperCase() );
+		return npJdbcTemplate.query( sql, params, new RoleResultSetExtractor() );
+	}
+	
+	class RoleResultSetExtractor implements ResultSetExtractor<Optional<Role>> {
+		@Override
+		public Optional<Role> extractData( ResultSet rs ) throws SQLException, DataAccessException {
+			if ( rs.next() ) {  
+				return Optional.of( Role.builder()
+						.id( rs.getLong( "id" ) )
+						.rolename( rs.getString( "rolename" ) )
+						.build()
+				);
+			}
+			return Optional.empty();
+		}
+	}
+
+	public String addUser( UserDescription description ) {
+		String rolename = description.getRolename();
+		Role role = fetchRoleByName( rolename ).orElseThrow( () -> new NoSuchElementException( "Role with name " + rolename + " not found." ) );
+		String sql = "insert into users ( username, hash, role_id ) values ( :username, :hash, :role_id )";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "username", description.getUsername() );
+		String hash = BCrypt.hashpw( description.getPassword(), BCrypt.gensalt() );
+		// log.debug( "hash of password {} is {}", description.getPassword(), hash );
+		params.put( "hash", hash );
+		params.put( "role_id", role.getId() );
+		int status = npJdbcTemplate.update( sql, params );
+		if ( status == 0 ) {
+			throw new IllegalAttemptException( "User with name " + description.getUsername() + " already exists." );
+		} else {
+			return ( "Successfully added user." );  // really should return the actual User here
+		}
 	}
 }

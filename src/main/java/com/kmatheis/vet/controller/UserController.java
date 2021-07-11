@@ -6,7 +6,9 @@ import javax.naming.AuthenticationException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -14,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.kmatheis.vet.dto.UserDescription;
 import com.kmatheis.vet.entity.LoginRequest;
 import com.kmatheis.vet.entity.User;
+import com.kmatheis.vet.exception.IllegalAttemptException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -70,6 +74,7 @@ public interface UserController {
 		}
 	)
 	@GetMapping( "/users" )
+	@ResponseStatus( code = HttpStatus.OK )
 	public List<User> getUsers( @RequestHeader( "Authorization" ) String bearerJwt ) throws AuthenticationException;
 	
 	@Operation(
@@ -91,9 +96,23 @@ public interface UserController {
 		}
 	)
 	@GetMapping( "/someusers" )
+	@ResponseStatus( code = HttpStatus.OK )
 	public List<User> getSomeUsers( 
-		@RequestHeader( "Authorization" ) String bearerJwt,
-		@RequestParam( required = false ) String nameContains
+			@RequestHeader( "Authorization" ) String bearerJwt, 
+			@RequestParam( required = false ) String nameContains
 	) throws AuthenticationException;
 	
+	@DeleteMapping( "/users/{id}" )
+	@ResponseStatus( code = HttpStatus.OK )
+	public String deleteUser( 
+			@RequestHeader( "Authorization" ) String bearerJwt, 
+			@PathVariable Long id 
+	) throws AuthenticationException, IllegalAttemptException;
+	
+	@PostMapping( "/users" )
+	@ResponseStatus( code = HttpStatus.OK )
+	public String addUser(
+			@RequestHeader( "Authorization" ) String bearerJwt,
+			@RequestBody UserDescription description
+	) throws AuthenticationException;
 }

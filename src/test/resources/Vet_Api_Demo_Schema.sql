@@ -14,7 +14,7 @@ create table if not exists server_keys (
     primary key ( id )
 );
 
--- e.g., ADMIN, TECH, RECEPTIONIST
+-- e.g., ADMIN, TECHNICIAN, RECEPTIONIST
 create table if not exists roles (
     id int unsigned not null auto_increment,
     rolename varchar(20),

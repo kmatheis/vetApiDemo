@@ -113,6 +113,12 @@ public class AuthService {
 		// We have a valid token, so now we check privileges.
 		
 		String[] hasPrivs = ( (String)claims.get( "privs" ) ).split( "," );
+		
+//		System.out.println( "has privs " );
+//		for( String s : hasPrivs ) {
+//			System.out.println( s );
+//		}
+		
 		Map<String, ArrayList<String>> hptree = new HashMap<>();
 		for ( String priv : hasPrivs ) {
 			String[] hpp = priv.split( " " );
@@ -126,9 +132,11 @@ public class AuthService {
 			String[] npp = neededPriv.split( " " );  // 0 component is one of add, edit, read, del, all; 1 component is a table name
 			ArrayList<String> canDo = hptree.get( npp[ 1 ] );
 			boolean found = false;
-			for ( String canVerb : canDo ) {
-				if ( canVerb.equals( "all" ) || canVerb.equals( npp[ 0 ] ) ) {
-					found = true;
+			if ( canDo != null ) {
+				for ( String canVerb : canDo ) {
+					if ( canVerb.equals( "all" ) || canVerb.equals( npp[ 0 ] ) ) {
+						found = true;
+					}
 				}
 			}
 			if ( !found ) {

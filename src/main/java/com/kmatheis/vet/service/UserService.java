@@ -10,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.kmatheis.vet.dao.UserDao;
+import com.kmatheis.vet.dto.UserDescription;
+import com.kmatheis.vet.entity.LoginRequest;
 import com.kmatheis.vet.entity.User;
+import com.kmatheis.vet.exception.IllegalAttemptException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,5 +39,26 @@ public class UserService {
 		authService.authorize( jwt, neededPrivs );
 		log.debug( "getSomeUsers auth is successful!" );
 		return userDao.fetchSomeUsers( nameContains );
+	}
+
+	public String deleteUser( String jwt, Long id ) throws AuthenticationException, IllegalAttemptException {
+		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "delete users" ) );
+		authService.authorize( jwt, neededPrivs );
+		log.debug( "deleteUser auth is successful!" );
+		if ( id < 4 ) {
+			throw new IllegalAttemptException( "Please do not attempt to delete the initial users." );
+		}
+		return userDao.deleteUser( id );
+	}
+
+	// TODO: candidate for verification bean
+	public String addUser( String jwt, UserDescription d ) throws AuthenticationException {
+		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "add users" ) );
+		authService.authorize( jwt, neededPrivs );
+		log.debug( "addUser auth is successful!" );
+		if ( d.getUsername() == null || d.getUsername().length() < 3 || d.getPassword() == null || d.getPassword().length() < 3 || d.getRolename() == null ) {
+			throw new IllegalAttemptException( "Username and password must be at least 3 long, and rolename must be present." );
+		}
+		return userDao.addUser( d );
 	}
 }

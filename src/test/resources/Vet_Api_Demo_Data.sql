@@ -3,13 +3,31 @@ insert into server_keys( server_key ) values( 'zuefpCdcIz/8VEkflD0D+K5srLeunWU+G
 
 -- Roles
 insert into roles values( '1', 'ADMIN' );
+insert into roles values( '2', 'RECEPTIONIST' );
+insert into roles values( '3', 'TECHNICIAN' );
 
--- Privs
+-- Privs (Receptionist cannot delete profile, animal, nor owner. Technician can all comments and delete animals.)
 insert into privs( description, role_id ) values( 'all users', 1 );
 insert into privs( description, role_id ) values( 'all animals', 1 );
+insert into privs( description, role_id ) values( 'all profiles', 1 );
+insert into privs( description, role_id ) values( 'all owners', 1 );
+insert into privs( description, role_id ) values( 'all reservations', 1 );
+insert into privs( description, role_id ) values( 'add animals', 2 );
+insert into privs( description, role_id ) values( 'edit animals', 2 );
+insert into privs( description, role_id ) values( 'read animals', 2 );
+insert into privs( description, role_id ) values( 'add profiles', 2 );
+insert into privs( description, role_id ) values( 'edit profiles', 2 );
+insert into privs( description, role_id ) values( 'read profiles', 2 );
+insert into privs( description, role_id ) values( 'add owners', 2 );
+insert into privs( description, role_id ) values( 'edit owners', 2 );
+insert into privs( description, role_id ) values( 'read owners', 2 );
+insert into privs( description, role_id ) values( 'all reservations', 2 );
+insert into privs( description, role_id ) values( 'del animals', 3 );
 
--- Users
+-- Users (should never be deleteable nor modifiable)
 insert into users( username, hash, role_id ) values( 'vetroot', '$2a$10$3jdN5MqO9tWHjTO8JGhU8.ACs9TloXqR.YjCB84d8SOB1USzSYV5.', 1 );
+insert into users( username, hash, role_id ) values( 'vetrec', '$2a$10$SBYd3h17NqVt3BrM5XJ87ugPDFC5YmtKCqbvNf5X8UdVweR1/Hooi', 2 );
+insert into users( username, hash, role_id ) values( 'vettech', '$2a$10$1TJR8h8zG8RoXSEysfehJe7qbcluEzJZxUkO09UTUL.HZezaGwZRi', 3 );
 
 -- Procs (H2 has an issue with stored procedures)
 

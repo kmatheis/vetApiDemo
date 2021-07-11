@@ -57,7 +57,7 @@ public class BaseTest {
 	
 	// Logs in the user and returns correct headers to be passed to a subsequent exchange() call.
 	protected HttpHeaders obtainHeadersFromValidLogin( String username, String password ) {
-		String jwt = obtainJwtFromValidLoginAuthHeader( "vetroot", "root" );
+		String jwt = obtainJwtFromValidLoginAuthHeader( username, password );
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType( MediaType.APPLICATION_JSON );
 		// headers.setAccept( Collections.singletonList( MediaType.APPLICATION_JSON ) );
