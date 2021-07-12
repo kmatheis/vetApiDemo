@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
+import com.kmatheis.vet.dao.ProfileDao.ProfileResultSetExtractor;
 import com.kmatheis.vet.entity.Animal;
 import com.kmatheis.vet.entity.Profile;
 import com.kmatheis.vet.entity.Species;
@@ -32,6 +34,8 @@ public class AnimalDao {
 	private NamedParameterJdbcTemplate npJdbcTemplate;
 	
 	private Long naid;
+	
+	// ==== Fetch animals
 	
 	public List<Animal> fetchAnimalsByProfile( Profile p ) {
 		String sql = "select * from animals where profile_fk = :profile_fk";
@@ -53,7 +57,38 @@ public class AnimalDao {
 				}
 		);
 	}
+	
+	private Animal animalFromResultSet( ResultSet rs ) throws SQLException {
+		return Animal.builder()
+				.pk( rs.getLong( "pk" ) )
+				.id( rs.getLong( "aid" ) )
+				.name( rs.getString( "name" ) )
+				.species( Species.valueOf( rs.getString( "species" ) ) )  // idem.
+				.profileId( rs.getLong( "pid" ) )
+				.build();
+	}
+	
+	class AnimalResultSetExtractor implements ResultSetExtractor<Optional<Animal>> {
+		@Override
+		public Optional<Animal> extractData( ResultSet rs ) throws SQLException, DataAccessException {
+			if ( rs.next() ) {  
+				return Optional.of( animalFromResultSet( rs ) );
+			}
+			return Optional.empty();
+		}
+	}
+	
+	public Optional<Animal> fetchAnimalById( Long id ) {
+		String sql = "select a.pk, a.id as \"aid\", a.name, a.species, p.id as \"pid\" from "
+					+ "animals a inner join profiles p on a.profile_fk = p.pk "
+					+ "where a.id = :id";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "id", id );
+		return npJdbcTemplate.query( sql, params, new AnimalResultSetExtractor() );
+	}
 
+	// ==== Add animals
+	
 	public Animal addAnimalToProfile( String name, Species species, Profile p ) {
 		// Illustrating obtaining the pk of the Animal upon insertion, and thus setting the pk attribute back to the returned Animal
 		//   (even though we don't display it).
@@ -109,4 +144,32 @@ public class AnimalDao {
 		naid = naid + 1;
 		return out;
 	}
+
+	public String deleteAnimal( Long aid ) {
+		String sql = "delete from animals where id = :id";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "id", aid );
+		int status = npJdbcTemplate.update( sql, params );
+		if ( status == 0 ) {
+			throw new NoSuchElementException( "Animal with id " + aid + " does not exist." );
+		} else {
+			return ( "Successfully deleted animal " + aid );
+		}
+	}
+
+	public String modifyAnimal( Long apk, String newName, Long newppk ) {
+		String sql = "update animals set name = :name, profile_fk = :ppk where pk = :apk";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "name", newName );
+		params.put( "ppk", newppk );
+		params.put( "apk", apk );
+		int status = npJdbcTemplate.update( sql, params );
+		if ( status == 0 ) {
+			throw new NoSuchElementException( "General failure updating animal." );
+		} else {
+			return ( "Successfully modified animal." );
+		}
+	}
+
+
 }

@@ -61,7 +61,7 @@ public class AnimalsTest extends BaseTest {
 	@Test
 	void testAddUnsupportedSpeciedAnimal() {
 		// Given: rec credentials
-		// When: that rec logs in and adds an animal
+		// When: that rec logs in and adds an animal of an unsupported species
 		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
 		String uri = String.format( "%s/%s", getBaseUri(), "profiles/1001/animals" );
 		String body = "{ \"name\": \"Blanca\", \"species\": \"WHITESPIKE\" }";
@@ -70,5 +70,32 @@ public class AnimalsTest extends BaseTest {
 		ResponseEntity<Animal> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, Animal.class );
 		// Then: the add fails with a 400.
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+	}
+	
+	@Test
+	void testDeleteAnimal() {
+		// Given: tech credentials
+		// When: that tech logs in and deletes an animal
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vettech", "vettech" );
+		String uri = String.format( "%s/%s", getBaseUri(), "profiles/1002/animals/10004" );
+		ResponseEntity<String> response = getRestTemplate().exchange( uri, HttpMethod.DELETE, new HttpEntity<>( "parameters", headers ), String.class );
+		// Then: the delete succeeds.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
+		assertThat( response.getBody() ).isEqualTo( "Successfully deleted animal 10004" );
+	}
+	
+	@Test
+	void testModifyAnimal() {
+		// Given: rec credentials
+		// When: that rec logs in and moves an animal from 1002 to 1001
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "profiles/1002/animals/10004" );
+		String body = "{ \"name\": \"Torty\", \"profileId\": 1001 }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<String> response = getRestTemplate().exchange( uri, HttpMethod.PUT, bodyEntity, String.class );
+		// Then: the modification succeeds.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
+		assertThat( response.getBody() ).isEqualTo( "Successfully modified animal." );
 	}
 }

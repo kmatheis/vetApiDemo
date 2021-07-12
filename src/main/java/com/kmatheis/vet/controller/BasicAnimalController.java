@@ -33,4 +33,14 @@ public class BasicAnimalController implements AnimalController {
 		return animalService.addAnimalToPid( authService.bearerToJwt( bearerJwt ), pid, animal );
 	}
 
+	@Override
+	public String deleteAnimal( String bearerJwt, Long pid, Long aid ) throws AuthenticationException {
+		return animalService.deleteAnimal( authService.bearerToJwt( bearerJwt ), pid, aid );
+	}
+
+	@Override
+	public String modifyAnimal( String bearerJwt, Long pid, Long aid, Animal animal ) throws AuthenticationException {
+		return animalService.modifyAnimal( authService.bearerToJwt( bearerJwt ), pid, aid, animal );
+	}
+
 }
