@@ -10,6 +10,7 @@ import javax.naming.AuthenticationException;
 
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -47,6 +48,13 @@ public class GlobalErrorHandler {
 	@ExceptionHandler( DuplicateKeyException.class )
 	@ResponseStatus( code = HttpStatus.BAD_REQUEST )  // i.e., 400
 	public Map<String, Object> handleDuplicateKeyException( DuplicateKeyException e, WebRequest webRequest ) {
+		return createExceptionMessage( e, HttpStatus.BAD_REQUEST, webRequest, LogStatus.MESSAGE_ONLY );
+	}
+	
+	// For when user provides bad JSON such as incorrect enums.
+	@ExceptionHandler( HttpMessageNotReadableException.class )
+	@ResponseStatus( code = HttpStatus.BAD_REQUEST )  // i.e., 400
+	public Map<String, Object> handleHttpMessageNotReadableException( HttpMessageNotReadableException e, WebRequest webRequest ) {
 		return createExceptionMessage( e, HttpStatus.BAD_REQUEST, webRequest, LogStatus.MESSAGE_ONLY );
 	}
 	

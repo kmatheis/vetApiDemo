@@ -27,11 +27,15 @@ public class BaseTest {
 	@Getter  // thanks to Lombok, a getter has been created, getRestTemplate(), so we don't have to pollute our code (check Outline)
 	protected TestRestTemplate restTemplate; 
 	
-	protected String getBaseUriForUsers() {  // URI of the request that will be sent to the application
+	protected String getBaseUri() {  // URI of the request that will be sent to the application
+		return String.format( "http://localhost:%d" , serverPort );
+	}	
+	
+	protected String getBaseUriForUsers() {  
 		return String.format( "http://localhost:%d/users" , serverPort );
 	}
 	
-	protected String getBaseUriForSomeUsers() {  // URI of the request that will be sent to the application
+	protected String getBaseUriForSomeUsers() { 
 		return String.format( "http://localhost:%d/someusers" , serverPort );
 	}
 	

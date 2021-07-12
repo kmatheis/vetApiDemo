@@ -32,5 +32,10 @@ public class BasicProfileController implements ProfileController {
 	public Profile getProfile( String bearerJwt, Long id ) throws AuthenticationException {
 		return profileService.getProfile( authService.bearerToJwt( bearerJwt ), id );
 	}
+
+	@Override
+	public String modifyProfile( String bearerJwt, Long id, Profile profile ) throws AuthenticationException {
+		return profileService.modifyProfile( authService.bearerToJwt( bearerJwt ), id, profile );
+	}
 	
 }

@@ -1,0 +1,35 @@
+// Sample JSON profile
+
+{
+    "id": 1001,
+    "name": "M/C Household",
+    "owners": [
+        {
+            "id": 5001,
+            "name": "Ken",
+            "phone": "800-555-1212"
+        },
+        {
+            "id": 5002,
+            "name": "Sylvia",
+            "phone": "813-555-1234"
+        }
+    ],
+    "animals": [
+        {
+            "id": 10001,
+            "name": "Sunshine",
+            "species": "CAT"
+        },
+        {
+            "id": 10002,
+            "name": "Mittens",
+            "species": "CAT"
+        },
+        {
+            "id": 10003,
+            "name": "Iana",
+            "species": "SUGAR_GLIDER"
+        }
+    ]
+}

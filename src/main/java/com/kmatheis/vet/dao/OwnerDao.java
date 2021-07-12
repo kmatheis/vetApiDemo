@@ -38,7 +38,7 @@ public class OwnerDao {
 								.id( rs.getLong( "id" ) )
 								.name( rs.getString( "name" ) )
 								.phone( rs.getString( "phone" ) )
-								.profile( p )
+								.profileId( p.getId() )
 								.build();
 					}
 				}

@@ -237,7 +237,7 @@ public class UserDao {
 		params.put( "role_id", roleId );
 		int status = npJdbcTemplate.update( sql, params );
 		if ( status == 0 ) {
-			throw new IllegalAttemptException( "General failure to update user." );
+			throw new IllegalAttemptException( "General failure to update user (user id may not exist)." );
 		} else {
 			return ( "Successfully modified user." );  // idem.
 		}

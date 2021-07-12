@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import com.kmatheis.vet.entity.Animal;
 import com.kmatheis.vet.entity.Owner;
 import com.kmatheis.vet.entity.Profile;
+import com.kmatheis.vet.exception.IllegalAttemptException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +34,10 @@ public class ProfileDao {
 	@Autowired
 	private AnimalDao animalDao;
 	
+	private Long npid;
+	
+	// ==== Fetching profiles
+	
 	private Profile profileFromResultSet( ResultSet rs ) throws SQLException {
 		// A Profile has Owners. Each Owner, in turn, has this Profile.
 		// So, when we construct owners, we put the partially constructed Profile (just its pk) as input in the fetchOwnersByProfile call.
@@ -40,15 +45,16 @@ public class ProfileDao {
 		// This Profile will be completed later, but because we pre-allocated the space, we can get away with using the reference p.
 		// (Similarly for Animals.)
 		
+		// Note that, since Profile.pk is @JsonIgnored, it will be nullified in the web response.
 		Long pk = rs.getLong( "pk" );
 		Profile p = new Profile();
 		p.setPk( pk );
+		p.setId( rs.getLong( "id" ) );
+		p.setName( rs.getString( "name" ) );
 		
 		List<Owner> owners = ownerDao.fetchOwnersByProfile( p );
 		List<Animal> animals = animalDao.fetchAnimalsByProfile( p );
 
-		p.setId( rs.getLong( "id" ) );
-		p.setName( rs.getString( "name" ) );
 		p.setOwners( owners );
 		p.setAnimals( animals );
 		return p;
@@ -81,6 +87,53 @@ public class ProfileDao {
 		Map<String, Object> params = new HashMap<>();
 		params.put( "id", id );
 		return npJdbcTemplate.query( sql, params, new ProfileResultSetExtractor() );
+	}
+	
+	
+	// ==== Profile ID management
+	
+	private Optional<Long> fetchLastProfileId() {
+		String sql = "select id from profiles order by id desc limit 1";
+		return npJdbcTemplate.query( sql, 
+				new ResultSetExtractor<Optional<Long>>() {
+					@Override
+					public Optional<Long> extractData( ResultSet rs ) throws SQLException, DataAccessException {
+						if ( rs.next() ) {  
+							return Optional.of( rs.getLong( "id" ) );
+						}
+						return Optional.empty();
+					}
+				} 
+		);
+	}
+	
+	public synchronized Long getNextProfileId() {
+		if ( npid == null ) {
+			Optional<Long> opid = fetchLastProfileId();
+			if ( opid.isPresent() ) {
+				npid = opid.get() + 1;
+			} else {
+				npid = 1001L;
+			}
+		}
+		Long out = npid;
+		npid = npid + 1;
+		return out;
+	}
+
+	// ==== Updating profiles
+	
+	public String modifyProfile( Long id, String name ) {
+		String sql = "update profiles set name = :name where id = :id";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "id", id );
+		params.put( "name", name );
+		int status = npJdbcTemplate.update( sql, params );
+		if ( status == 0 ) {
+			throw new IllegalAttemptException( "General failure to update profile (profile id may not exist)." );
+		} else {
+			return ( "Successfully modified profile." );  // idem.
+		}
 	}
 
 }

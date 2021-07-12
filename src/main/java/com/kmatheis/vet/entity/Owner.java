@@ -16,15 +16,16 @@ public class Owner {
 	private Long id;
 	private String name;
 	private String phone;
-	private Profile profile;
+	// private Profile profile;  // best if we don't do this for cyclic reasons (e.g., System.out.println( profile ) )
+	private Long profileId;  // should still know to which profile the owner is attached though
 	
 	@JsonIgnore
 	public Long getPk() {  // for security, we hide the pk
 		return pk;
 	}
 	
-	@JsonIgnore
-	public Profile getProfile() {  // to avoid cyclic display issues, we hide the display of the Profile
-		return profile;
-	}
+//	@JsonIgnore
+//	public Profile getProfile() {  // to avoid cyclic display issues, we hide the display of the Profile
+//		return profile;
+//	}
 }
