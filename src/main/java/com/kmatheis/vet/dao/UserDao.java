@@ -125,7 +125,6 @@ public class UserDao {
 					}
 				}
 		);
-		
 	}
 
 	public List<User> fetchSomeUsers( String nameContains ) {
