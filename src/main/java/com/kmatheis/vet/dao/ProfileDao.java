@@ -39,12 +39,8 @@ public class ProfileDao {
 	// ==== Fetching profiles
 	
 	private Profile profileFromResultSet( ResultSet rs ) throws SQLException {
-		// A Profile has Owners. Each Owner, in turn, has this Profile.
-		// So, when we construct owners, we put the partially constructed Profile (just its pk) as input in the fetchOwnersByProfile call.
-		// That method will find each Owner for this Profile, and importantly set each Owner's profile property to the passed-in profile.
-		// This Profile will be completed later, but because we pre-allocated the space, we can get away with using the reference p.
-		// (Similarly for Animals.)
-		
+		// We can pass a partially constructed Profile to the fetchOwners and fetchAnimals calls
+		//   as a convenience since it will contain both the pk and the id. Alternately, we could use inner joins.
 		// Note that, since Profile.pk is @JsonIgnored, it will be nullified in the web response.
 		Long pk = rs.getLong( "pk" );
 		Profile p = new Profile();

@@ -82,7 +82,9 @@ public class AnimalService {
 		if ( newName.length() < 3 ) {
 			throw new IllegalAttemptException( "Animal's name must have at least 3 characters." );
 		}
-		Long newpid = animal.getProfileId();
+		
+		Long newpid = ( animal.getProfileId() == null ? pid : animal.getProfileId() );
+		
 		Profile newProfile = profileDao.fetchProfileById( newpid ).orElseThrow( () -> new NoSuchElementException( "Profile with id " + newpid + " does not exist." ) );  
 
 		return animalDao.modifyAnimal( foundAnimal.getPk(), newName, newProfile.getPk() );

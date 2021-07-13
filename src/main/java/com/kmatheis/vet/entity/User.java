@@ -1,7 +1,5 @@
 package com.kmatheis.vet.entity;
 
-import org.springframework.data.annotation.Transient;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;

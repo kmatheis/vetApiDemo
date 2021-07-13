@@ -74,6 +74,9 @@ public class UserService {
 			throw new IllegalAttemptException( "Username and password must be at least 3 long, and rolename must be present." );
 		}
 		userDao.fetchUserById( id ).orElseThrow( () -> new NoSuchElementException( "User with id " + id + " doesn't exist." ) );  // fetches for confirmation only
+		if ( id < 4 ) {
+			throw new IllegalAttemptException( "Please do not attempt to modify the initial users." );
+		}
 		String rolename = d.getRolename();
 		Role role = userDao.fetchRoleByName( rolename ).orElseThrow( () -> new NoSuchElementException( "Role with name " + rolename + " not found." ) );
 		return userDao.modifyUser( id, d.getUsername(), d.getPassword(), role.getId() );
