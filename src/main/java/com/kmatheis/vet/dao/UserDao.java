@@ -38,13 +38,6 @@ public class UserDao {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
-	public Optional<User> fetchUser( String username ) {
-		String sql = "select * from users where username = :username";
-		Map<String, Object> params = new HashMap<>();
-		params.put( "username", username );
-		return npJdbcTemplate.query( sql, params, new UserResultSetExtractor() );
-	}
-	
 	class UserResultSetExtractor implements ResultSetExtractor<Optional<User>> {
 		@Override
 		public Optional<User> extractData( ResultSet rs ) throws SQLException, DataAccessException {
@@ -59,6 +52,13 @@ public class UserDao {
 			}
 			return Optional.empty();
 		}
+	}
+	
+	public Optional<User> fetchUser( String username ) {
+		String sql = "select * from users where username = :username";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "username", username );
+		return npJdbcTemplate.query( sql, params, new UserResultSetExtractor() );
 	}
 	
 	public List<ServerKey> fetchServerKeys() {
