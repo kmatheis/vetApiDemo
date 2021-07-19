@@ -144,6 +144,8 @@ public class AnimalDao {
 		naid = naid + 1;
 		return out;
 	}
+	
+	// ==== Delete and Update
 
 	public String deleteAnimal( Long aid ) {
 		String sql = "delete from animals where id = :id";

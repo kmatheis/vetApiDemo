@@ -28,7 +28,6 @@ do what you think they do. The system will reject attempts to mutate them. Other
 This project is incomplete. The following will still need to be addressed:
 - There are currently no ways to manipulate owners,
 - There is no comment handling as yet (vax records, checkup notes, etc.),
-- Dates are not synchronized to the correct timezone,
 - Verification beans should be added in a few natural places,
 - More endpoints need OpenAPI documentation,
 - Additional reservation date checks need to be incorporated, and

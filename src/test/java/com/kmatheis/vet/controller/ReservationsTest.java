@@ -3,8 +3,13 @@ package com.kmatheis.vet.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.core.ParameterizedTypeReference;
@@ -45,7 +50,7 @@ public class ReservationsTest extends BaseTest {
 	}
 	
 	@Test
-	void testAddLegitimateReservation() {
+	void testAddValidReservation() {
 		// Given: rec credentials
 		// When: that rec logs in and adds a res for animal 10004 for room id 106 from 2021-03-20 to 2021-04-01
 		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
@@ -63,4 +68,29 @@ public class ReservationsTest extends BaseTest {
 		List<Reservation> reservations = response2.getBody();
 		assertThat( reservations.size() ).isEqualTo( 3 );
 	}
+	
+	@ParameterizedTest
+	@MethodSource( "com.kmatheis.vet.controller.ReservationsTest#paramsForInvalidRes" )
+	void testAddInvalidReservationsFromRoomOccupied( String aid, String rid, String fromdate, String todate ) {
+		// Given: rec credentials
+		// When: that rec logs in and adds a res which is invalid due to room being occupied
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "reservations" );
+		String body = "{ \"aid\": " + aid + ", \"rid\": " + rid + ", \"fromdate\": \"" + fromdate + "\", \"todate\": \"" + todate + "\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<String> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, String.class );
+		// Then: We obtain an error.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+	}
+	
+	static Stream<Arguments> paramsForInvalidRes() {
+		return Stream.of(
+			arguments( "10004", "106", "2021-03-20", "2021-04-02" ),
+			arguments( "10004", "106", "2021-04-04", "2021-04-08" ),
+			arguments( "10004", "106", "2021-04-02", "2021-04-04" ),
+			arguments( "10004", "106", "2021-03-20", "2021-04-08" )
+		);
+	}
+	
 }

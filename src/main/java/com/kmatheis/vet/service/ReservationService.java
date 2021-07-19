@@ -1,8 +1,11 @@
 package com.kmatheis.vet.service;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -53,10 +56,11 @@ public class ReservationService {
 		Long aid = res.getAid();
 		Long rid = res.getRid();
 		Date fromdate = res.getFromdate();
-		String fdstr = dateFormatter.format( fromdate );
 		Date todate = res.getTodate();
+		// log.debug( "in ReservationService.addReservation, fromdate={} and todate={} (might be off by one due to bad DB/sys sync)", fromdate, todate );
+		String fdstr = dateFormatter.format( fromdate );
 		String tdstr = dateFormatter.format( todate );
-		log.debug( "in ReservationService.addReservation, fromdate={} and todate={} (might be off by one due to bad DB/sys sync)", fromdate, todate );
+		// log.debug( "in ReservationService.addReservation, fdstr={} and tdstr={}", fdstr, tdstr );
 		if ( fromdate.compareTo( todate ) >= 0 ) {
 			throw new IllegalAttemptException( "Provided fromdate must be strictly earlier than provided todate." );
 		}
