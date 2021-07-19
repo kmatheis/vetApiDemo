@@ -1,11 +1,8 @@
 package com.kmatheis.vet.service;
 
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -67,7 +64,7 @@ public class ReservationService {
 		Animal a = animalDao.fetchAnimalById( aid ).orElseThrow( () -> new NoSuchElementException( "Animal with id " + aid + " does not exist." ) );
 		Room r = roomDao.fetchRoomById( rid ).orElseThrow( () -> new NoSuchElementException( "Room with id " + rid + " does not exist." ) );
 		// perhaps some date checking is in order
-		if ( !reservationDao.isRoomClear( rid, fdstr, tdstr ) ) {
+		if ( r.getMaxcap() == 1 && !reservationDao.isRoomClear( rid, fdstr, tdstr ) ) {
 			throw new IllegalAttemptException( "Room id " + rid + " is already booked for at least one day in [" + fdstr + "; " + tdstr + "). "
 					+ "(If you're experiencing an off-by-one error, dates have not yet been synchronized between system, MySQL, and H2.)" );
 		}

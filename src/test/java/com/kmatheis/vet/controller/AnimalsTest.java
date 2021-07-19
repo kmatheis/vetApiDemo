@@ -27,7 +27,7 @@ import com.kmatheis.vet.entity.Animal;
     "classpath:Vet_Api_Demo_Schema.sql",  
     "classpath:Vet_Api_Demo_Data.sql" }, 
     config = @SqlConfig( encoding = "utf-8" ) )
-public class AnimalsTest extends BaseTest {
+class AnimalsTest extends BaseTest {
 
 	@Test
 	void testGetAnimals() {
@@ -98,4 +98,5 @@ public class AnimalsTest extends BaseTest {
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
 		assertThat( response.getBody() ).isEqualTo( "Successfully modified animal." );
 	}
+
 }

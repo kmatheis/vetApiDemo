@@ -17,7 +17,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
-import com.kmatheis.vet.dao.ProfileDao.ProfileResultSetExtractor;
 import com.kmatheis.vet.entity.Animal;
 import com.kmatheis.vet.entity.Profile;
 import com.kmatheis.vet.entity.Species;

@@ -31,8 +31,9 @@ import com.kmatheis.vet.entity.User;
     "classpath:Vet_Api_Demo_Schema.sql",  
     "classpath:Vet_Api_Demo_Data.sql" }, 
     config = @SqlConfig( encoding = "utf-8" ) )
-public class ModifyUsersTest extends ModifyUsersTestSupport {
-	
+class ModifyUsersTest extends ModifyUsersTestSupport {
+
+	// TODO: Rewrite test to not do this
 	@Autowired
 	UserDao userDao;
 
@@ -149,4 +150,5 @@ public class ModifyUsersTest extends ModifyUsersTestSupport {
 		Role role = oRole.get();
 		assertThat( user.getRoleId() ).isEqualTo( role.getId() );
 	}
+
 }

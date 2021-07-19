@@ -17,7 +17,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 
 import com.kmatheis.vet.controller.support.BaseTest;
-import com.kmatheis.vet.entity.Animal;
 import com.kmatheis.vet.entity.Profile;
 
 @SpringBootTest( webEnvironment = WebEnvironment.RANDOM_PORT )
@@ -26,7 +25,7 @@ import com.kmatheis.vet.entity.Profile;
     "classpath:Vet_Api_Demo_Schema.sql",  
     "classpath:Vet_Api_Demo_Data.sql" }, 
     config = @SqlConfig( encoding = "utf-8" ) )
-public class ProfilesTest extends BaseTest {
+class ProfilesTest extends BaseTest {
 
 	@Test
 	void testObtainProfiles() {
@@ -41,4 +40,5 @@ public class ProfilesTest extends BaseTest {
 		System.out.println( profiles );
 		assertThat( profiles.size() ).isEqualTo( 2 );
 	}
+
 }

@@ -1,7 +1,5 @@
 package com.kmatheis.vet.dto;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;

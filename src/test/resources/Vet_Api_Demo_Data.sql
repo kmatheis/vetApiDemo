@@ -56,7 +56,7 @@ insert into owners( id, name, phone, profile_fk ) values( 5003, 'Jana', '813-555
 insert into owners( id, name, phone, profile_fk ) values( 5004, 'Jenny', '813-867-5309', 2 );
 
 -- Reservations
-insert into reservations values( 4, 1, '2021-06-01', '2021-06-04', 0 );
+insert into reservations values( 4, 1, '2021-06-01', '2021-06-05', 0 );
 insert into reservations values( 4, 1, '2021-06-11', '2021-06-15', 0 );
 insert into reservations values( 1, 6, '2021-04-01', '2021-04-05', 0 );
 insert into reservations values( 2, 6, '2021-04-01', '2021-04-05', 0 );

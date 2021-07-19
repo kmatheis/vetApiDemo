@@ -32,7 +32,7 @@ import com.kmatheis.vet.dto.Reservation;
     "classpath:Vet_Api_Demo_Schema.sql",  
     "classpath:Vet_Api_Demo_Data.sql" }, 
     config = @SqlConfig( encoding = "utf-8" ) )
-public class ReservationsTest extends BaseTest {
+class ReservationsTest extends BaseTest {
 
 	@Test
 	void testFetchReservations() {
@@ -69,9 +69,18 @@ public class ReservationsTest extends BaseTest {
 		assertThat( reservations.size() ).isEqualTo( 3 );
 	}
 	
+	static Stream<Arguments> paramsForInvalidResMaxcapOne() {
+		return Stream.of(
+			arguments( "10004", "101", "2021-05-20", "2021-06-02" ),
+			arguments( "10004", "101", "2021-06-04", "2021-06-08" ),
+			arguments( "10004", "101", "2021-06-02", "2021-06-04" ),
+			arguments( "10004", "101", "2021-05-20", "2021-06-08" )
+		);
+	}
+	
 	@ParameterizedTest
-	@MethodSource( "com.kmatheis.vet.controller.ReservationsTest#paramsForInvalidRes" )
-	void testAddInvalidReservationsFromRoomOccupied( String aid, String rid, String fromdate, String todate ) {
+	@MethodSource( "com.kmatheis.vet.controller.ReservationsTest#paramsForInvalidResMaxcapOne" )
+	void testAddInvalidReservationsFromRoomMaxcapOneOccupied( String aid, String rid, String fromdate, String todate ) {
 		// Given: rec credentials
 		// When: that rec logs in and adds a res which is invalid due to room being occupied
 		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
@@ -83,14 +92,5 @@ public class ReservationsTest extends BaseTest {
 		// Then: We obtain an error.
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
 	}
-	
-	static Stream<Arguments> paramsForInvalidRes() {
-		return Stream.of(
-			arguments( "10004", "106", "2021-03-20", "2021-04-02" ),
-			arguments( "10004", "106", "2021-04-04", "2021-04-08" ),
-			arguments( "10004", "106", "2021-04-02", "2021-04-04" ),
-			arguments( "10004", "106", "2021-03-20", "2021-04-08" )
-		);
-	}
-	
+
 }

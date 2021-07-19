@@ -2,7 +2,6 @@ package com.kmatheis.vet.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +12,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
 import com.kmatheis.vet.dto.Reservation;
@@ -67,6 +65,7 @@ public class ReservationDao {
 		}
 	}
 	
+	// for single maxcap rooms only (for larger maxcaps, will use more robust sql)
 	public boolean isRoomClear( Long rid, String fdstr, String tdstr ) {
 		String sql = "select count(*) from " + tablessql + "where ro.id = :rid and not "
 						+ "( :fdstr >= re.todate or :tdstr <= re.fromdate )";
