@@ -9,7 +9,8 @@ Upon successful logging in, they will receive a JSON Web Token (JWT) in the Auth
 
 Further, the project incorporates dynamic database roles: administrators need only change data in the database tables `privs` and `roles`  to tailor individual roles; the code will not have to change.
 
-Finally, primary keys are hidden, and instead users use ids to manipulate profiles, animals, owners, and reservations. (In the case of users, the id is the primary key. This is simply to demo simpler code.) Each DAO which needs to will generate the next id when additional ids are called for. (At present, the scheme is simple, but one can do many things here.)
+Finally, primary keys are hidden, and instead users use ids to manipulate profiles, animals, owners, and reservations. (In the case of users, the id is the primary key. This is simply to demo simpler code.) 
+Each DAO which needs to will generate the next id when additional ids are called for using a generator object, so that the code for next-id-generation is in only one place. (The scheme is simple, but one can do many things here.)
 
 ## Roles
 

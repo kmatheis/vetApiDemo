@@ -22,18 +22,42 @@ import com.kmatheis.vet.entity.Profile;
 import com.kmatheis.vet.exception.IllegalAttemptException;
 import com.kmatheis.vet.internal.SqlParams;
 
-import lombok.extern.slf4j.Slf4j;
+// import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Slf4j
+// @Slf4j
 public class OwnerDao {
-
+	
 	@Autowired
 	private NamedParameterJdbcTemplate npJdbcTemplate;
 	
-	// private IdGenerator ownerIdGen = new IdGenerator( 5001L, "owners", npJdbcTemplate );
+	private BabyIdGenerator idGen;
+
+	// ==== Owner ID Management
 	
-	private Long noid;
+	private Optional<Long> fetchLastOwnerId() {
+		String sql = "select id from owners order by id desc limit 1";
+		return npJdbcTemplate.query( sql, 
+				new ResultSetExtractor<Optional<Long>>() {
+					@Override
+					public Optional<Long> extractData( ResultSet rs ) throws SQLException, DataAccessException {
+						if ( rs.next() ) {  
+							return Optional.of( rs.getLong( "id" ) );
+						}
+						return Optional.empty();
+					}
+				} 
+		);
+	}
+	
+	public synchronized Long getNextOwnerId() {		
+		if ( idGen == null ) {
+			idGen = new BabyIdGenerator( fetchLastOwnerId().orElse( 5000L ) );
+		}
+		return idGen.getNextId();
+	}
+	
+	// ==== Fetching
 	
 	public List<Owner> fetchOwnersByProfile( Profile p ) {
 		String sql = "select * from owners where profile_fk = :profile_fk";
@@ -54,32 +78,6 @@ public class OwnerDao {
 					}
 				}
 		);
-	}
-
-	
-	public Owner addOwnerToProfile( String name, String phone, Profile p ) {
-		// Illustrating obtaining the pk of the Owner upon insertion, and thus setting the pk attribute back to the returned Owner
-		//   (even though we don't display it).
-		SqlParams params = new SqlParams();
-		params.sql = "insert into owners( name, phone, id, profile_fk ) values ( :name, :phone, :id, :profile_fk )";
-		params.source.addValue( "name", name );
-		params.source.addValue( "phone", phone );
-		Long aid = getNextOwnerId();
-		params.source.addValue( "id", aid );
-		params.source.addValue( "profile_fk", p.getPk() );
-		KeyHolder keyHolder = new GeneratedKeyHolder();
-		int status = npJdbcTemplate.update( params.sql, params.source, keyHolder );
-		if ( status == 0 ) {
-			throw new IllegalAttemptException( "General failure to add owner." );
-		}
-		Long pk = keyHolder.getKey().longValue();
-		return Owner.builder()
-				.pk( pk )
-				.id( aid )
-				.name( name )
-				.phone( phone )
-				.profileId( p.getId() )
-				.build();
 	}
 	
 	private Owner ownerFromResultSet( ResultSet rs ) throws SQLException {
@@ -111,35 +109,31 @@ public class OwnerDao {
 		return npJdbcTemplate.query( sql, params, new OwnerResultSetExtractor() );
 	}
 	
-	// ==== Owner ID Management
+	// ==== Inserting
 	
-	private Optional<Long> fetchLastOwnerId() {
-		String sql = "select id from owners order by id desc limit 1";
-		return npJdbcTemplate.query( sql, 
-				new ResultSetExtractor<Optional<Long>>() {
-					@Override
-					public Optional<Long> extractData( ResultSet rs ) throws SQLException, DataAccessException {
-						if ( rs.next() ) {  
-							return Optional.of( rs.getLong( "id" ) );
-						}
-						return Optional.empty();
-					}
-				} 
-		);
-	}
-	
-	public synchronized Long getNextOwnerId() {
-		if ( noid == null ) {
-			Optional<Long> opid = fetchLastOwnerId();
-			if ( opid.isPresent() ) {
-				noid = opid.get() + 1;
-			} else {
-				noid = 50001L;
-			}
+	public Owner addOwnerToProfile( String name, String phone, Profile p ) {
+		// Illustrating obtaining the pk of the Owner upon insertion, and thus setting the pk attribute back to the returned Owner
+		//   (even though we don't display it).
+		SqlParams params = new SqlParams();
+		params.sql = "insert into owners( name, phone, id, profile_fk ) values ( :name, :phone, :id, :profile_fk )";
+		params.source.addValue( "name", name );
+		params.source.addValue( "phone", phone );
+		Long oid = getNextOwnerId();
+		params.source.addValue( "id", oid );
+		params.source.addValue( "profile_fk", p.getPk() );
+		KeyHolder keyHolder = new GeneratedKeyHolder();
+		int status = npJdbcTemplate.update( params.sql, params.source, keyHolder );
+		if ( status == 0 ) {
+			throw new IllegalAttemptException( "General failure to add owner." );
 		}
-		Long out = noid;
-		noid = noid + 1;
-		return out;
+		Long pk = keyHolder.getKey().longValue();
+		return Owner.builder()
+				.pk( pk )
+				.id( oid )
+				.name( name )
+				.phone( phone )
+				.profileId( p.getId() )
+				.build();
 	}
 	
 	// ==== Delete and Update

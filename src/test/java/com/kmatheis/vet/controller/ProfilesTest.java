@@ -37,7 +37,7 @@ class ProfilesTest extends BaseTest {
 		ResponseEntity<List<Profile>> response = getRestTemplate().exchange( uri, HttpMethod.GET, new HttpEntity<>( "parameters", headers ), new ParameterizedTypeReference<>() {} );
 		// Then: We see both profiles.
 		List<Profile> profiles = response.getBody();
-		System.out.println( profiles );
+		// System.out.println( profiles );
 		assertThat( profiles.size() ).isEqualTo( 2 );
 	}
 

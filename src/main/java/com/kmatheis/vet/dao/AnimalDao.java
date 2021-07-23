@@ -23,16 +23,40 @@ import com.kmatheis.vet.entity.Species;
 import com.kmatheis.vet.exception.IllegalAttemptException;
 import com.kmatheis.vet.internal.SqlParams;
 
-import lombok.extern.slf4j.Slf4j;
+// import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Slf4j
+// @Slf4j
 public class AnimalDao {
 	
 	@Autowired
 	private NamedParameterJdbcTemplate npJdbcTemplate;
 	
-	private Long naid;
+	private BabyIdGenerator idGen;
+	
+	// ==== Animal ID Management
+	
+	private Optional<Long> fetchLastAnimalId() {
+		String sql = "select id from animals order by id desc limit 1";
+		return npJdbcTemplate.query( sql, 
+				new ResultSetExtractor<Optional<Long>>() {
+					@Override
+					public Optional<Long> extractData( ResultSet rs ) throws SQLException, DataAccessException {
+						if ( rs.next() ) {  
+							return Optional.of( rs.getLong( "id" ) );
+						}
+						return Optional.empty();
+					}
+				} 
+		);
+	}
+	
+	public synchronized Long getNextAnimalId() {
+		if ( idGen == null ) {
+			idGen = new BabyIdGenerator( fetchLastAnimalId().orElse( 10000L ) );
+		}
+		return idGen.getNextId();
+	}
 	
 	// ==== Fetch animals
 	
@@ -111,37 +135,6 @@ public class AnimalDao {
 				.species( species )
 				.profileId( p.getId() )
 				.build();
-	}
-	
-	// ==== Animal ID Management
-	
-	private Optional<Long> fetchLastAnimalId() {
-		String sql = "select id from animals order by id desc limit 1";
-		return npJdbcTemplate.query( sql, 
-				new ResultSetExtractor<Optional<Long>>() {
-					@Override
-					public Optional<Long> extractData( ResultSet rs ) throws SQLException, DataAccessException {
-						if ( rs.next() ) {  
-							return Optional.of( rs.getLong( "id" ) );
-						}
-						return Optional.empty();
-					}
-				} 
-		);
-	}
-	
-	public synchronized Long getNextAnimalId() {
-		if ( naid == null ) {
-			Optional<Long> opid = fetchLastAnimalId();
-			if ( opid.isPresent() ) {
-				naid = opid.get() + 1;
-			} else {
-				naid = 10001L;
-			}
-		}
-		Long out = naid;
-		naid = naid + 1;
-		return out;
 	}
 	
 	// ==== Delete and Update

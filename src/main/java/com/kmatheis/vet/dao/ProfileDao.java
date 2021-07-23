@@ -19,10 +19,10 @@ import com.kmatheis.vet.entity.Owner;
 import com.kmatheis.vet.entity.Profile;
 import com.kmatheis.vet.exception.IllegalAttemptException;
 
-import lombok.extern.slf4j.Slf4j;
+// import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Slf4j
+// @Slf4j
 public class ProfileDao {
 
 	@Autowired
@@ -34,7 +34,31 @@ public class ProfileDao {
 	@Autowired
 	private AnimalDao animalDao;
 	
-	private Long npid;
+	private BabyIdGenerator idGen;
+	
+	// ==== Profile ID management
+	
+	private Optional<Long> fetchLastProfileId() {
+		String sql = "select id from profiles order by id desc limit 1";
+		return npJdbcTemplate.query( sql, 
+				new ResultSetExtractor<Optional<Long>>() {
+					@Override
+					public Optional<Long> extractData( ResultSet rs ) throws SQLException, DataAccessException {
+						if ( rs.next() ) {  
+							return Optional.of( rs.getLong( "id" ) );
+						}
+						return Optional.empty();
+					}
+				} 
+		);
+	}
+	
+	public synchronized Long getNextProfileId() {
+		if ( idGen == null ) {
+			idGen = new BabyIdGenerator( fetchLastProfileId().orElse( 1000L ) );
+		}
+		return idGen.getNextId();
+	}
 	
 	// ==== Fetching profiles
 	
@@ -83,38 +107,6 @@ public class ProfileDao {
 		Map<String, Object> params = new HashMap<>();
 		params.put( "id", id );
 		return npJdbcTemplate.query( sql, params, new ProfileResultSetExtractor() );
-	}
-	
-	
-	// ==== Profile ID management
-	
-	private Optional<Long> fetchLastProfileId() {
-		String sql = "select id from profiles order by id desc limit 1";
-		return npJdbcTemplate.query( sql, 
-				new ResultSetExtractor<Optional<Long>>() {
-					@Override
-					public Optional<Long> extractData( ResultSet rs ) throws SQLException, DataAccessException {
-						if ( rs.next() ) {  
-							return Optional.of( rs.getLong( "id" ) );
-						}
-						return Optional.empty();
-					}
-				} 
-		);
-	}
-	
-	public synchronized Long getNextProfileId() {
-		if ( npid == null ) {
-			Optional<Long> opid = fetchLastProfileId();
-			if ( opid.isPresent() ) {
-				npid = opid.get() + 1;
-			} else {
-				npid = 1001L;
-			}
-		}
-		Long out = npid;
-		npid = npid + 1;
-		return out;
 	}
 
 	// ==== Updating profiles
