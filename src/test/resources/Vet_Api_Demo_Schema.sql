@@ -47,14 +47,16 @@ create table if not exists rooms (
     name varchar(40) not null,
     maxcap int unsigned not null,
     cost decimal( 5, 2 ) not null,
-    primary key ( pk )
+    primary key ( pk ),
+    unique key ( id )
 );
 
 create table if not exists profiles (
     pk int unsigned not null auto_increment,
     id int unsigned not null,
     name varchar(40) not null,
-    primary key ( pk )
+    primary key ( pk ),
+    unique key ( id )
 );
 
 create table if not exists animals (
@@ -64,7 +66,8 @@ create table if not exists animals (
     species enum( 'OTHER', 'CAT', 'DOG', 'SUGAR_GLIDER', 'TURTLE', 'TORTOISE', 'IGUANA', 'BIRD', 'RODENT' ),
     profile_fk int unsigned not null,
     primary key ( pk ),
-    foreign key ( profile_fk ) references profiles( pk ) on delete cascade
+    foreign key ( profile_fk ) references profiles( pk ) on delete cascade,
+    unique key ( id )
 );
 
 create table if not exists owners (
@@ -74,7 +77,8 @@ create table if not exists owners (
     phone varchar(40),
     profile_fk int unsigned not null,
     primary key ( pk ),
-    foreign key ( profile_fk ) references profiles( pk ) on delete cascade
+    foreign key ( profile_fk ) references profiles( pk ) on delete cascade,
+    unique key ( id )
 );
 
 -- Implicit many-to-many table: res ids are dynamically generated instead of statically stored.
@@ -93,9 +97,11 @@ create table if not exists reservations (
 create table if not exists comments (
     pk int unsigned not null auto_increment,
     id int unsigned not null,
-    created datetime not null default now(),
-    type enum( 'OTHER', 'VAX', 'CHECKUP', 'SURGERY' ),
+    ondate datetime not null default now(),
+    type enum( 'OTHER', 'VAX', 'CHECKUP', 'SURGERY', 'FEEDING', 'FOOD' ),
+    comment varchar(1000) not null,
     animal_fk int unsigned not null,
     primary key( pk ),
-    foreign key ( animal_fk ) references animals( pk ) on delete cascade
+    foreign key ( animal_fk ) references animals( pk ) on delete cascade,
+    unique key ( id )
 );

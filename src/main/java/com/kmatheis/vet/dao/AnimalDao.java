@@ -18,6 +18,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 
 import com.kmatheis.vet.entity.Animal;
+import com.kmatheis.vet.entity.Comment;
 import com.kmatheis.vet.entity.Profile;
 import com.kmatheis.vet.entity.Species;
 import com.kmatheis.vet.exception.IllegalAttemptException;
@@ -31,6 +32,9 @@ public class AnimalDao {
 	
 	@Autowired
 	private NamedParameterJdbcTemplate npJdbcTemplate;
+	
+	@Autowired
+	private CommentDao commentDao;
 	
 	private BabyIdGenerator idGen;
 	
@@ -60,6 +64,23 @@ public class AnimalDao {
 	
 	// ==== Fetch animals
 	
+	// pid will be different since rs is obtained from two different queries
+	private Animal animalFromResultSet( ResultSet rs, Long pid ) throws SQLException {
+		Animal a = Animal.builder()
+				.pk( rs.getLong( "pk" ) )
+				.id( rs.getLong( "id" ) )
+				.name( rs.getString( "name" ) )
+				.species( Species.valueOf( rs.getString( "species" ) ) )  // DB enum to String to Java Enum. valueOf will only recognize if the string is all caps.
+				.profileId( pid )
+				.build();
+		
+		List<Comment> comments = commentDao.fetchCommentsByAnimal( a );
+		
+		a.setComments( comments );
+		
+		return a;
+	}
+	
 	public List<Animal> fetchAnimalsByProfile( Profile p ) {
 		String sql = "select * from animals where profile_fk = :profile_fk";
 		Map<String, Object> params = new HashMap<>();
@@ -69,40 +90,24 @@ public class AnimalDao {
 				new RowMapper<Animal>() {
 					@Override
 					public Animal mapRow( ResultSet rs, int rowNum ) throws SQLException {
-						return Animal.builder()
-								.pk( rs.getLong( "pk" ) )
-								.id( rs.getLong( "id" ) )
-								.name( rs.getString( "name" ) )
-								.species( Species.valueOf( rs.getString( "species" ) ) )  // DB enum to String to Java Enum. valueOf will only recognize if the string is all caps.
-								.profileId( p.getId() )
-								.build();
+						return animalFromResultSet( rs, p.getId() );
 					}
 				}
 		);
-	}
-	
-	private Animal animalFromResultSet( ResultSet rs ) throws SQLException {
-		return Animal.builder()
-				.pk( rs.getLong( "pk" ) )
-				.id( rs.getLong( "aid" ) )
-				.name( rs.getString( "name" ) )
-				.species( Species.valueOf( rs.getString( "species" ) ) )  // idem.
-				.profileId( rs.getLong( "pid" ) )
-				.build();
 	}
 	
 	class AnimalResultSetExtractor implements ResultSetExtractor<Optional<Animal>> {
 		@Override
 		public Optional<Animal> extractData( ResultSet rs ) throws SQLException, DataAccessException {
 			if ( rs.next() ) {  
-				return Optional.of( animalFromResultSet( rs ) );
+				return Optional.of( animalFromResultSet( rs, rs.getLong( "pid" ) ) );
 			}
 			return Optional.empty();
 		}
 	}
 	
 	public Optional<Animal> fetchAnimalById( Long id ) {
-		String sql = "select a.pk, a.id as \"aid\", a.name, a.species, p.id as \"pid\" from "
+		String sql = "select a.pk, a.id as \"id\", a.name, a.species, p.id as \"pid\" from "
 					+ "animals a inner join profiles p on a.profile_fk = p.pk "
 					+ "where a.id = :id";
 		Map<String, Object> params = new HashMap<>();

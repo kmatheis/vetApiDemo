@@ -23,6 +23,7 @@ insert into privs( description, role_id ) values( 'edit owners', 2 );
 insert into privs( description, role_id ) values( 'read owners', 2 );
 insert into privs( description, role_id ) values( 'all reservations', 2 );
 insert into privs( description, role_id ) values( 'all comments', 3 );
+insert into privs( description, role_id ) values( 'read animals', 3 );
 insert into privs( description, role_id ) values( 'del animals', 3 );
 
 -- Users (the following should never be deleteable nor modifiable)
@@ -61,6 +62,14 @@ insert into reservations values( 4, 1, '2021-06-11', '2021-06-15', 0 );
 insert into reservations values( 1, 6, '2021-04-01', '2021-04-05', 0 );
 insert into reservations values( 2, 6, '2021-04-01', '2021-04-05', 0 );
 insert into reservations values( 3, 6, '2021-04-01', '2021-04-05', 0 );
+
+-- Comments
+insert into comments( id, ondate, type, comment, animal_fk ) values( 50001, '2011-05-07 14:00:00', 'VAX', 'Rabies', 1 );
+insert into comments( id, ondate, type, comment, animal_fk ) values( 50002, '2011-05-07 14:10:00', 'VAX', 'Rabies', 2 );
+insert into comments( id, ondate, type, comment, animal_fk ) values( 50003, '2020-05-07 09:00:00', 'FOOD', 'SH Kibble Oral Health', 1 );
+insert into comments( id, ondate, type, comment, animal_fk ) values( 50004, '2020-05-07 09:00:30', 'FOOD', 'SH Kibble Oral Health', 2 );
+insert into comments( id, ondate, type, comment, animal_fk ) values( 50005, '2020-10-20 15:30:00', 'CHECKUP', '14 lbs, all clear', 1 );
+insert into comments( id, ondate, type, comment, animal_fk ) values( 50006, '2020-10-20 15:45:00', 'CHECKUP', '13 lbs, all clear', 2 );
 
 -- Procs (H2 has an issue with stored procedures)
 

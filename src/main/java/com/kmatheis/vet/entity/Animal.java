@@ -1,5 +1,7 @@
 package com.kmatheis.vet.entity;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
@@ -18,6 +20,7 @@ public class Animal {
 	private Species species;
 	// private Profile profile;  // best if we don't do this for cyclic reasons (e.g., System.out.println( profile ) )
 	private Long profileId;  // should still know to which profile the animal is attached though
+	private List<Comment> comments;
 	
 	@JsonIgnore
 	public Long getPk() {  // for security, we hide the pk
