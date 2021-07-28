@@ -38,6 +38,13 @@ public class AnimalService {
 		Profile p = profileDao.fetchProfileById( pid ).orElseThrow( () -> new NoSuchElementException( "Profile with id " + pid + " does not exist." ) );
 		return p.getAnimals();
 	}
+	
+	public Animal getAnimalByAid( String jwt, Long aid ) throws AuthenticationException {
+		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "read animals" ) );
+		authService.authorize( jwt, neededPrivs );
+		
+		return animalDao.fetchAnimalById( aid ).orElseThrow( () -> new NoSuchElementException( "Animal with id " + aid + " does not exist." ) );
+	}
 
 	public Animal addAnimalToPid( String jwt, Long pid, Animal animal ) throws AuthenticationException {
 		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "add animals" ) );

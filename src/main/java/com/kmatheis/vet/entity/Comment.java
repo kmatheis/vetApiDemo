@@ -1,5 +1,6 @@
 package com.kmatheis.vet.entity;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class Comment {
 	private Long pk;
 	private Long id;
-	private Date ondate;
+	private Timestamp ondate;
 	private Type type;
 	private String comment;
 	private Long animalId;
@@ -28,7 +29,7 @@ public class Comment {
 	}
 	
 	@JsonFormat( shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss", timezone="America/New_York" )
-	public Date getOndate() {
+	public Timestamp getOndate() {
 		return ondate;
 	}
 	

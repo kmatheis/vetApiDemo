@@ -25,6 +25,13 @@ public interface AnimalController {
 			@PathVariable Long pid 
 	) throws AuthenticationException;
 	
+	@GetMapping( "/animals/{aid}" )
+	@ResponseStatus( code = HttpStatus.OK )
+	public Animal getAnimalByAid( 
+			@RequestHeader( "Authorization" ) String bearerJwt, 
+			@PathVariable Long aid 
+	) throws AuthenticationException;
+	
 	@PostMapping( "/profiles/{pid}/animals" )
 	@ResponseStatus( code = HttpStatus.OK )
 	public Animal addAnimalToPid(

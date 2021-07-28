@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +72,8 @@ public class CommentDao {
 						return Comment.builder()
 								.pk( rs.getLong( "pk" ) )
 								.id( rs.getLong( "id" ) )
-								.ondate( rs.getDate( "ondate" ) )
+								.ondate( rs.getTimestamp( "ondate" ) )
+								// .ondate( rs.getDate( "ondate" ) )
 								.type( Type.valueOf( rs.getString( "type" ) ) )
 								.comment( rs.getString( "comment" ) )
 								.animalId( a.getId() )
@@ -85,7 +87,6 @@ public class CommentDao {
 	
 	public Animal addCommentToAnimal( Comment comment, Long apk, Long aid ) {
 		String sql = "insert into comments ( id, ondate, type, comment, animal_fk ) values ( :id, :ondate, :type, :comment, :animal_fk )";
-		log.debug( "in CommentDao.addCommentToAnimal, comment ondate is {}", comment.getOndate() );
 		Long cid = getNextCommentId();
 		Map<String, Object> params = new HashMap<>();
 		params.put( "id", cid );
@@ -99,8 +100,20 @@ public class CommentDao {
 		}
 		// Verified in service, so it exists here. Also forcing a db re-read to generate utmost confidence that the change was made.
 		Animal out = animalDao.fetchAnimalById( aid ).get();
-		log.debug( "...and out is {}", out );
 		return out;
+	}
+	
+	// ==== Deleting comment
+
+	public Animal deleteComment( Long aid, Long cid ) {
+		String sql = "delete from comments where id = :id";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "id", cid );
+		int status = npJdbcTemplate.update( sql, params );
+		if ( status == 0 ) {
+			throw new NoSuchElementException( "General failure in deleting comment." );
+		}
+		return animalDao.fetchAnimalById( aid ).get();
 	}
 	
 }

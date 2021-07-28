@@ -27,6 +27,11 @@ public class BasicAnimalController implements AnimalController {
 	public List<Animal> getAnimalsByPid( String bearerJwt, Long pid ) throws AuthenticationException {
 		return animalService.getAnimalsByPid( authService.bearerToJwt( bearerJwt ), pid );
 	}
+	
+	@Override
+	public Animal getAnimalByAid( String bearerJwt, Long aid ) throws AuthenticationException {
+		return animalService.getAnimalByAid( authService.bearerToJwt( bearerJwt ), aid );
+	}
 
 	@Override
 	public Animal addAnimalToPid( String bearerJwt, Long pid, Animal animal ) throws AuthenticationException {

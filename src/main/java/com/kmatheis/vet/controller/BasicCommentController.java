@@ -24,4 +24,9 @@ public class BasicCommentController implements CommentController {
 		return commentService.addCommentToAid( authService.bearerToJwt( bearerJwt ), aid, comment );
 	}
 
+	@Override
+	public Animal deleteComment( String bearerJwt, Long aid, Long cid ) throws AuthenticationException {
+		return commentService.deleteComment( authService.bearerToJwt( bearerJwt ), aid, cid );
+	}
+
 }

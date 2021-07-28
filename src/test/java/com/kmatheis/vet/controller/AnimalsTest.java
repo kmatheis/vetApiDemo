@@ -43,6 +43,21 @@ class AnimalsTest extends BaseTest {
 	}
 	
 	@Test
+	void testGetAnimal() {
+		// Given: rec credentials
+		// When: that rec logs in and searches for animal id 10001
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "animals/10001" );
+		
+		ResponseEntity<Animal> response = getRestTemplate().exchange( uri, HttpMethod.GET, new HttpEntity<>( "parameters", headers ), Animal.class );
+		// Then: that animal is found.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
+		Animal a = response.getBody();
+		assertThat( a.getName() ).isEqualTo( "Sunshine" );
+		assertThat( a.getComments() ).hasSize( 3 );
+	}
+	
+	@Test
 	void testAddAnimal() {
 		// Given: rec credentials
 		// When: that rec logs in and adds an animal
