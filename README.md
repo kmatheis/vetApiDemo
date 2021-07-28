@@ -60,11 +60,13 @@ Legal animal species are `OTHER`, `CAT`, `DOG`, `SUGAR_GLIDER`, `TURTLE`, `TORTO
 
 Legal comment types are `OTHER`, `VAX`, `CHECKUP`, `SURGERY`, `FEEDING` (which reflects what food was used when the animal was boarded), and `FOOD` (which reflects what food the vet sold the owner for this pet).
 
-## Date Synchronization
+## Minor Notes
 
 The dates used in reservations are stored as MySQL `DATE`s and deserialized into java.util.Date objects.
 
 The datetimes used in comments are stored as MySQL `DATETIME`s and deserialized into java.sql.Timestamp objects. 
+
+Though animals and owners will display owning profile id, comments will not display owning animal id. No one displays primary keys.
 
 ## Incompleteness
 
