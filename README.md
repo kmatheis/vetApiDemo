@@ -16,8 +16,8 @@ Each DAO which needs to will generate the next id when additional ids are called
 ## Roles
 
 The following roles are currently defined:
-- ADMIN, which can do everything (including manipulate user logins),
-- RECEPTIONIST, which cannot manipulate users nor comments, but can add/edit/read profiles, animals, and owners. They also can fully manipulate reservations, and
+- ADMIN, which can do everything (including manipulate user logins).
+- RECEPTIONIST, which cannot manipulate users, but can add/edit/read profiles, animals, and owners, and can read comments. They also can fully manipulate reservations.
 - TECHNICIAN, which can fully manipulate comments and delete animals.
 
 The logins of

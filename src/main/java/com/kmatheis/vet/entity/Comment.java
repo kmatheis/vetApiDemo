@@ -1,10 +1,10 @@
 package com.kmatheis.vet.entity;
 
 import java.sql.Timestamp;
-import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,10 +27,24 @@ public class Comment {
 	public Long getPk() {  // for security, we hide the pk
 		return pk;
 	}
+	@JsonProperty
+	public void setPk( Long pk ) {
+		this.pk = pk;
+	}
 	
 	@JsonFormat( shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss", timezone="America/New_York" )
 	public Timestamp getOndate() {
 		return ondate;
+	}
+	
+	// We don't need to constantly display animalId for comments but we'd still like to deserialize it correctly.
+	@JsonIgnore
+	public Long getAnimalId() {
+		return animalId;
+	}
+	@JsonProperty
+	public void setAnimalId( Long animalId ) {
+		this.animalId = animalId;
 	}
 	
 }

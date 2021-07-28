@@ -6,12 +6,16 @@ insert into roles values( '1', 'ADMIN' );
 insert into roles values( '2', 'RECEPTIONIST' );
 insert into roles values( '3', 'TECHNICIAN' );
 
--- Privs (Receptionist cannot delete profile, animal, nor owner. Technician can all comments and delete animals.)
+-- Privs
+-- -- Admins can do anything.
+-- -- Receptionist can add/edit/read profiles, animals, and owners. They can all read comments.
+-- -- Technician can all comments and delete animals.
 insert into privs( description, role_id ) values( 'all users', 1 );
 insert into privs( description, role_id ) values( 'all animals', 1 );
 insert into privs( description, role_id ) values( 'all profiles', 1 );
 insert into privs( description, role_id ) values( 'all owners', 1 );
 insert into privs( description, role_id ) values( 'all reservations', 1 );
+insert into privs( description, role_id ) values( 'all comments', 1 );
 insert into privs( description, role_id ) values( 'add animals', 2 );
 insert into privs( description, role_id ) values( 'edit animals', 2 );
 insert into privs( description, role_id ) values( 'read animals', 2 );
@@ -22,6 +26,7 @@ insert into privs( description, role_id ) values( 'add owners', 2 );
 insert into privs( description, role_id ) values( 'edit owners', 2 );
 insert into privs( description, role_id ) values( 'read owners', 2 );
 insert into privs( description, role_id ) values( 'all reservations', 2 );
+insert into privs( description, role_id ) values( 'read comments', 2 );
 insert into privs( description, role_id ) values( 'all comments', 3 );
 insert into privs( description, role_id ) values( 'read animals', 3 );
 insert into privs( description, role_id ) values( 'del animals', 3 );

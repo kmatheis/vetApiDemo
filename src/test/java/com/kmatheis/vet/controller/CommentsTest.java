@@ -58,7 +58,7 @@ class CommentsTest extends BaseTest {
 		ResponseEntity<Animal> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, Animal.class );
 		// Then: the add is successful.
 		Animal a = response.getBody();
-		// System.out.println( a );
+		System.out.println( a );
 		assertThat( a.getId() ).isEqualTo( Integer.parseInt( aid ) );
 		assertThat( a.getComments() ).hasSize( correctCount );
 	}
