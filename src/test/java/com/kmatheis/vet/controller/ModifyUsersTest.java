@@ -3,6 +3,7 @@ package com.kmatheis.vet.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ class ModifyUsersTest extends ModifyUsersTestSupport {
 		// When: that admin logs in and attempts to delete the superuser
 	    HttpHeaders headers = obtainHeadersFromValidLogin( "vetroot", "root" );
 		String uri = String.format( "%s/1", getBaseUriForUsers() );
-		ResponseEntity<String> response = getRestTemplate().exchange( uri, HttpMethod.DELETE, new HttpEntity<>( "parameters", headers ), String.class );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.DELETE, new HttpEntity<>( "parameters", headers ), new ParameterizedTypeReference<>() {} );
 		
 		// Then: we return BAD REQUEST (400)
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
@@ -58,7 +59,7 @@ class ModifyUsersTest extends ModifyUsersTestSupport {
 		String body = "{ \"username\": \"vetroot\", \"password\": \"rootedtree\", \"rolename\": \"ADMIN\" }";
 		headers.setContentType( MediaType.APPLICATION_JSON );
 		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
-		ResponseEntity<String> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, String.class );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
 		
 		// Then: we return BAD REQUEST (400)
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
@@ -106,6 +107,22 @@ class ModifyUsersTest extends ModifyUsersTestSupport {
 		assertThat( response.getBody() ).isEqualTo( "Successfully added user." );
 	}
 	
+	@Test
+	void testAddBadRole() {
+		// Given: admin credentials
+		// When: that admin logs in and adds a bad role (i.e., it has special characters)
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetroot", "root" );
+		String uri = String.format( "%s", getBaseUriForUsers() );
+		String body = "{ \"username\": \"atech\", \"password\": \"atech\", \"rolename\": \"TECHN!C!AN\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: the add fails.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		Map<String, Object> error = response.getBody();
+		assertThat( error.get( "message" ) ).isEqualTo( "rolename should be just letters, numbers, and/or underscores." );
+	}
+	
 	@Test 
 	void testRecAddingRec() {
 		// Given: receptionist credentials
@@ -115,7 +132,7 @@ class ModifyUsersTest extends ModifyUsersTestSupport {
 		String body = "{ \"username\": \"arec\", \"password\": \"arec\", \"rolename\": \"RECEPTIONIST\" }";
 		headers.setContentType( MediaType.APPLICATION_JSON );
 		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
-		ResponseEntity<String> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, String.class );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
 		
 		// Then: we return UNAUTHORIZED (401)
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.UNAUTHORIZED );

@@ -12,12 +12,11 @@ import org.springframework.stereotype.Service;
 
 import com.kmatheis.vet.dao.ProfileDao;
 import com.kmatheis.vet.entity.Profile;
-import com.kmatheis.vet.exception.IllegalAttemptException;
 
-import lombok.extern.slf4j.Slf4j;
+// import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
+// @Slf4j
 public class ProfileService {
 	
 	@Autowired
@@ -50,9 +49,6 @@ public class ProfileService {
 		//   3) May make the most sense to reject compound changes and just take simple changes, relying on other endpoints for attaching/deleting.
 		// Going with Option (3):
 		String name = profile.getName();
-		if ( name == null || name.length() < 6 ) {
-			throw new IllegalAttemptException( "Profile name must have at least 6 characters." );
-		}
 		return profileDao.modifyProfile( id, name );
 	}
 	

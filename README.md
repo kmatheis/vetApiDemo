@@ -1,13 +1,13 @@
 # Welcome to VetApiDemo!
 This project is meant to demonstrate a backend Web API using Spring Boot (JDBC driver) and MySQL. This API models common use cases in a veterinarian's office which also boards pets while their owners are away.
 
-This project was last updated on 2021-07-28.
+This project was last updated on 2021-08-03.
 
 ## Security Features
 This demo has certain security features: each user is assigned a particular role, and each users must log in. Only hashes of passwords are stored in the database. 
 Upon successful logging in, they will receive a JSON Web Token (JWT) in the Authorization header of the response. Users must then incorporate this bearer token in the Authorization header of any future requests.
 
-Further, the project incorporates dynamic database roles: administrators need only change data in the database tables `privs` and `roles`  to tailor individual roles; the code will not have to change.
+Further, the project incorporates dynamic database roles: administrators need only change data in the database tables `privs` and `roles` to tailor individual roles; the code will not have to change.
 
 Finally, primary keys are hidden, and instead users use ids to manipulate profiles, animals, owners, and reservations. (In the case of users, the id is the primary key. This is simply to demo simpler code.) 
 
@@ -68,12 +68,19 @@ The datetimes used in comments are stored as MySQL `DATETIME`s and deserialized 
 
 Though animals and owners will display owning profile id, comments will not display owning animal id. No one displays primary keys.
 
+The only profile property directly changeable via PUT `/profiles/:id` is `name`. Since owners and animals are independently managed with separate endpoints, use those to modify a profile's owners and animals.
+
 ## Incompleteness
 
-This project is incomplete. The following will still need to be addressed:
-- Verification beans should be added in a few natural places,
+This project is incomplete. The following still need to be addressed:
+- Additional erification beans should be added in a few natural places,
 - More endpoints need OpenAPI documentation, and
 - Additional reservation date checks need to be incorporated.
 
 The unit tests, though useful, can also stand to be a little more robust. 
 These gaps will hopefully be addressed soon.
+
+Minor TODOs:
+- Provide endpoints to add and delete profiles.
+- Clean up certain error tests.
+- Some verification beans are present, but still need to add others (Owner, Reservation, Comments).

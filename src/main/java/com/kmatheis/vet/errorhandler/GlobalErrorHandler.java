@@ -11,6 +11,7 @@ import javax.naming.AuthenticationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -26,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GlobalErrorHandler {
 	
 	private enum LogStatus { STACK_TRACE, MESSAGE_ONLY };
-
+	
 	@ExceptionHandler( NoSuchElementException.class )
 	@ResponseStatus( code = HttpStatus.NOT_FOUND )  // i.e., 404
 	public Map<String, Object> handleNoSuchElementException( NoSuchElementException e, WebRequest webRequest ) {
@@ -58,6 +59,32 @@ public class GlobalErrorHandler {
 		return createExceptionMessage( e, HttpStatus.BAD_REQUEST, webRequest, LogStatus.MESSAGE_ONLY );
 	}
 	
+	private String getLastDefaultMessage( String s ) {
+		int i = s.indexOf( "default message" );
+		boolean found = false;
+		while ( i >= 0 ) {
+			found = true;
+			s = s.substring( i + 1 );
+			i = s.indexOf( "default message" );
+			// System.out.println( s );
+		}
+		if ( !found ) {
+			return s;
+		}
+		int lbi = s.indexOf( "[" );
+		int rbi = s.indexOf( "]" );
+		return s.substring( lbi + 1, rbi );
+	}
+	
+	@ExceptionHandler( MethodArgumentNotValidException.class )
+	@ResponseStatus( code = HttpStatus.BAD_REQUEST )  // i.e., 400
+	public Map<String, Object> handleMethodArgumentNotValidException( MethodArgumentNotValidException e, WebRequest webRequest ) {
+		// If a bean validator triggers, the message in the error natively is a bit verbose.
+		// Thus we need to parse it a bit to extract only the message we provided in the @Min, @Max., etc. annotation.
+		// This message occurs as the last "default message" bit in the error text.
+		return createExceptionMessage( e, HttpStatus.BAD_REQUEST, webRequest, LogStatus.MESSAGE_ONLY, getLastDefaultMessage( e.toString() ) );
+	}
+	
 	// Handle any exception that is not covered by the above.
 	@ExceptionHandler( Exception.class )
 	@ResponseStatus( code = HttpStatus.INTERNAL_SERVER_ERROR )  // i.e., 500
@@ -66,6 +93,10 @@ public class GlobalErrorHandler {
 	}
 	
 	private Map<String, Object> createExceptionMessage( Exception e, HttpStatus status, WebRequest webRequest, LogStatus logStatus ) {
+		return createExceptionMessage( e, status, webRequest, logStatus, e.toString() );  // toString() will also typ. provide class, for better or worse
+	}
+	
+	private Map<String, Object> createExceptionMessage( Exception e, HttpStatus status, WebRequest webRequest, LogStatus logStatus, String msg ) {
 		Map<String, Object> error = new HashMap<>();
 		String timestamp = ZonedDateTime.now().format( DateTimeFormatter.RFC_1123_DATE_TIME );
 		
@@ -73,7 +104,7 @@ public class GlobalErrorHandler {
 			error.put( "uri", ((ServletWebRequest) webRequest).getRequest().getRequestURI() );
 		}
 		
-		error.put( "message", e.toString() );  // toString() will also typ. provide class
+		error.put( "message", msg );
 		error.put( "status code", status.value() );
 		error.put( "timestamp", timestamp );
 		error.put( "reason", status.getReasonPhrase() );

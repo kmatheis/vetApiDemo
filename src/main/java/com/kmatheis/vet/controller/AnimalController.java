@@ -3,8 +3,10 @@ package com.kmatheis.vet.controller;
 import java.util.List;
 
 import javax.naming.AuthenticationException;
+import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.kmatheis.vet.entity.Animal;
 
+@Validated
 public interface AnimalController {
 
 	@GetMapping( "/profiles/{pid}/animals" )
@@ -37,7 +40,7 @@ public interface AnimalController {
 	public Animal addAnimalToPid(
 			@RequestHeader( "Authorization" ) String bearerJwt, 
 			@PathVariable Long pid,
-			@RequestBody Animal animal
+			@Valid @RequestBody Animal animal
 	) throws AuthenticationException;
 	
 	// Though we don't need /profiles/{pid} as a prefix since we need only the animal's id, we require it since users will make mistakes.
@@ -56,6 +59,6 @@ public interface AnimalController {
 			@RequestHeader( "Authorization" ) String bearerJwt, 
 			@PathVariable Long pid,
 			@PathVariable Long aid,
-			@RequestBody Animal animal
+			@Valid @RequestBody Animal animal
 	) throws AuthenticationException;
 }

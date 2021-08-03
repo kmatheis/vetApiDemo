@@ -50,13 +50,13 @@ public class AnimalService {
 		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "add animals" ) );
 		authService.authorize( jwt, neededPrivs );
 		Profile p = profileDao.fetchProfileById( pid ).orElseThrow( () -> new NoSuchElementException( "Profile with id " + pid + " does not exist." ) );
-		// log.debug( "in addAnimalToPid, animal obtained from user is {}", animal );
+		log.debug( "in addAnimalToPid, animal obtained from user is {}", animal );
 		String name = animal.getName();
 		Species species = animal.getSpecies();
 		// HttoMessageNotReadableException will occur if species is not one of the predefined DB Enums, so we just add that to the 
 		//   GlobalErrorHandler and not do any checking here.
-		if ( name == null || name.length() < 3 ) {
-			throw new IllegalAttemptException( "Animal's name must have at least 3 characters." );
+		if ( name == null ) {  // length handled by annotations, but since annotations will allow for null (e.g., when modifying), need a check here
+			throw new IllegalAttemptException( "Animal's name must exist." );
 		}
 		return animalDao.addAnimalToProfile( name, species, p );
 	}

@@ -18,7 +18,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 import com.kmatheis.vet.dao.UserDao;
-import com.kmatheis.vet.entity.LoginRequest;
+import com.kmatheis.vet.dto.LoginRequest;
 import com.kmatheis.vet.entity.Role;
 import com.kmatheis.vet.entity.ServerKey;
 import com.kmatheis.vet.entity.User;

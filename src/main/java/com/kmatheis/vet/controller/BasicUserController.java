@@ -11,8 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kmatheis.vet.dto.LoginRequest;
 import com.kmatheis.vet.dto.UserDescription;
-import com.kmatheis.vet.entity.LoginRequest;
 import com.kmatheis.vet.entity.User;
 import com.kmatheis.vet.exception.IllegalAttemptException;
 import com.kmatheis.vet.internal.UserReply;

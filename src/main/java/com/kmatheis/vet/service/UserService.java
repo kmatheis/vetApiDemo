@@ -12,15 +12,14 @@ import org.springframework.stereotype.Service;
 
 import com.kmatheis.vet.dao.UserDao;
 import com.kmatheis.vet.dto.UserDescription;
-import com.kmatheis.vet.entity.LoginRequest;
 import com.kmatheis.vet.entity.Role;
 import com.kmatheis.vet.entity.User;
 import com.kmatheis.vet.exception.IllegalAttemptException;
 
-import lombok.extern.slf4j.Slf4j;
+// import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
+// @Slf4j
 public class UserService {
 
 	@Autowired
@@ -53,14 +52,10 @@ public class UserService {
 		return userDao.deleteUser( id );
 	}
 
-	// TODO: candidate for verification bean
 	public String addUser( String jwt, UserDescription d ) throws AuthenticationException {
 		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "add users" ) );
 		authService.authorize( jwt, neededPrivs );
-		// log.debug( "addUser auth is successful!" );
-		if ( d.getUsername() == null || d.getUsername().length() < 3 || d.getPassword() == null || d.getPassword().length() < 3 || d.getRolename() == null ) {
-			throw new IllegalAttemptException( "Username and password must be at least 3 long, and rolename must be present." );
-		}
+		// Since the annotations in UserDescription handle all the basic text checks we need, we don't have to have complicated checking code here.
 		String rolename = d.getRolename();
 		Role role = userDao.fetchRoleByName( rolename ).orElseThrow( () -> new NoSuchElementException( "Role with name " + rolename + " not found." ) );
 		return userDao.addUser( d.getUsername(), d.getPassword(), role.getId() );
@@ -69,10 +64,7 @@ public class UserService {
 	public String modifyUser( String jwt, Long id, UserDescription d ) throws AuthenticationException {
 		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "edit users" ) );
 		authService.authorize( jwt, neededPrivs );
-		// log.debug( "addUser auth is successful!" );
-		if ( d.getUsername() == null || d.getUsername().length() < 3 || d.getPassword() == null || d.getPassword().length() < 3 || d.getRolename() == null ) {
-			throw new IllegalAttemptException( "Username and password must be at least 3 long, and rolename must be present." );
-		}
+		// idem.
 		userDao.fetchUserById( id ).orElseThrow( () -> new NoSuchElementException( "User with id " + id + " doesn't exist." ) );  // fetches for confirmation only
 		if ( id < 4 ) {
 			throw new IllegalAttemptException( "Please do not attempt to modify the initial users." );

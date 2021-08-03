@@ -26,8 +26,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 
+import com.kmatheis.vet.Constants;
 import com.kmatheis.vet.controller.support.FetchUsersTestSupport;
-import com.kmatheis.vet.entity.LoginRequest;
+import com.kmatheis.vet.dto.LoginRequest;
 import com.kmatheis.vet.entity.ServerKey;
 import com.kmatheis.vet.entity.User;
 import com.kmatheis.vet.service.AuthService;
@@ -102,7 +103,7 @@ class FetchUsersTest extends FetchUsersTestSupport {
 		}
 		
 		@Test
-		void testInvalidLoginUsername() {
+		void testInvalidLoginUsernameNotThere() {
 			// Given: invalid login username
 			String body = "{ \"username\": \"vetrootbeer\", \"password\": \"root\" }";
 			String uri = getBaseUriForUsers() + "/login";
@@ -111,15 +112,52 @@ class FetchUsersTest extends FetchUsersTestSupport {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType( MediaType.APPLICATION_JSON );
 			HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
-			ResponseEntity<User> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, User.class );
+			//   since we're expecting an error, output should be a Map<String, Object>
+			ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
 			
 			// Then: we return a NOT FOUND status (404)
 			assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.NOT_FOUND );
 		}
 		
 		@Test
+		void testInvalidLoginUsernameTooShort() {
+			// Given: invalid login username (by way of it being too short)
+			String body = "{ \"username\": \"v\", \"password\": \"root\" }";
+			String uri = getBaseUriForUsers() + "/login";
+			
+			// When: the user logs in
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType( MediaType.APPLICATION_JSON );
+			HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+			ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+			
+			// Then: we return a BAD REQUEST status
+			assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+			Map<String, Object> error = response.getBody();
+			assertThat( error.get( "message" ) ).isEqualTo( "username should have at least " + Constants.USERNAME_MIN_LENGTH + " characters." );
+		}
+		
+		@Test
+		void testInvalidLoginUsernameTooLong() {
+			// Given: invalid login username (by way of it being too long)
+			String body = "{ \"username\": \"v23456789012345678901234567890\", \"password\": \"root\" }";
+			String uri = getBaseUriForUsers() + "/login";
+			
+			// When: the user logs in
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType( MediaType.APPLICATION_JSON );
+			HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+			ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+			
+			// Then: we return a BAD REQUEST status
+			assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+			Map<String, Object> error = response.getBody();
+			assertThat( error.get( "message" ) ).isEqualTo( "username should have at most " + Constants.USERNAME_MAX_LENGTH + " characters." );
+		}
+		
+		@Test
 		void testInvalidLoginPassword() {
-			// Given: invalid login password
+			// Given: invalid login password by way of it not being equal to user's actual password
 			String body = "{ \"username\": \"vetroot\", \"password\": \"rootbeer\" }";
 			String uri = getBaseUriForUsers() + "/login";
 			
@@ -127,10 +165,28 @@ class FetchUsersTest extends FetchUsersTestSupport {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setContentType( MediaType.APPLICATION_JSON );
 			HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
-			ResponseEntity<User> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, User.class );
+			ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
 			
 			// Then: we return an UNAUTHORIZED status (401)
 			assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.UNAUTHORIZED );
+		}
+		
+		@Test
+		void testInvalidLoginPasswordWeirdCharacter() {
+			// Given: invalid login password by way of it having a weird character
+			String body = "{ \"username\": \"vetroot\", \"password\": \"root[]beer\" }";
+			String uri = getBaseUriForUsers() + "/login";
+			
+			// When: the user logs in
+			HttpHeaders headers = new HttpHeaders();
+			headers.setContentType( MediaType.APPLICATION_JSON );
+			HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+			ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+			
+			// Then: we return a BAD REQUEST status (400)
+			assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+			Map<String, Object> error = response.getBody();
+			assertThat( error.get( "message" ) ).isEqualTo( "password should be just letters, numbers, underscores, spaces, and/or certain special characters." );
 		}
 		
 		// NOTE: SpringBoot seems to have a real problem with bodies in GET requests. Specifically, it will set the body to null
