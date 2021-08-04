@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,6 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 
+import com.kmatheis.vet.Constants;
 import com.kmatheis.vet.controller.support.BaseTest;
 import com.kmatheis.vet.entity.Animal;
 import com.kmatheis.vet.entity.Owner;
@@ -58,7 +61,7 @@ class CommentsTest extends BaseTest {
 		ResponseEntity<Animal> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, Animal.class );
 		// Then: the add is successful.
 		Animal a = response.getBody();
-		System.out.println( a );
+		// System.out.println( a );
 		assertThat( a.getId() ).isEqualTo( Integer.parseInt( aid ) );
 		assertThat( a.getComments() ).hasSize( correctCount );
 	}
@@ -116,5 +119,77 @@ class CommentsTest extends BaseTest {
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
 		Animal a = response.getBody();
 		assertThat( a.getComments() ).hasSize( 2 );
+	}
+	
+	@Test
+	void testDeleteCommentBadId() {
+		// Given: tech credentials
+		// When: that tech logs in and deletes a comment whose id doesn't match the owning animal's id
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vettech", "vettech" );
+		String uri = String.format( "%s/%s", getBaseUri(), "animals/10001/comments/50002" );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.DELETE, new HttpEntity<>( "parameters", headers ), new ParameterizedTypeReference<>() {} );
+		// Then: the deletion fails.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.NOT_FOUND );
+		assertThat( ((String) response.getBody().get( "message" )).indexOf( "Comment with id 50002 does not belong to animal with id 10001." ) ).isGreaterThanOrEqualTo( 0 );
+	}
+	
+	@Test
+	void testAddCommentWithNoComment() {
+		// Given: tech credentials
+		// When: that tech logs in and adds a comment whose comment field is missing
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vettech", "vettech" );
+		String uri = String.format( "%s/%s", getBaseUri(), "animals/10001/comments" );
+		String body = "{ \"ondate\": \"2021-06-01 01:01:01\", \"type\": \"VAX\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: the addition fails.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "comment must exist." );
+	}
+	
+	@Test
+	void testAddCommentWithNoType() {
+		// Given: tech credentials
+		// When: that tech logs in and adds a comment whose type field is missing
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vettech", "vettech" );
+		String uri = String.format( "%s/%s", getBaseUri(), "animals/10001/comments" );
+		String body = "{ \"ondate\": \"2021-06-01 01:01:01\", \"comment\": \"Some vaccination\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: the addition fails.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "type must exist." );
+	}
+	
+	@Test
+	void testAddCommentWithCommentTooShort() {
+		// Given: tech credentials
+		// When: that tech logs in and adds a comment whose comment field is too short
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vettech", "vettech" );
+		String uri = String.format( "%s/%s", getBaseUri(), "animals/10001/comments" );
+		String body = "{ \"ondate\": \"2021-06-01 01:01:01\", \"comment\": \"So\", \"type\": \"VAX\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: the addition fails.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "comment should have at least " + Constants.COMMENT_MIN_LENGTH + " characters." );
+	}
+	
+	@Test
+	void testAddCommentWithOndateInFuture() {
+		// Given: tech credentials
+		// When: that tech logs in and adds a comment whose comment field is too short
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vettech", "vettech" );
+		String uri = String.format( "%s/%s", getBaseUri(), "animals/10001/comments" );
+		String body = "{ \"ondate\": \"2525-06-01 01:01:01\", \"comment\": \"Some comment\", \"type\": \"OTHER\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: the addition fails.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( ((String) response.getBody().get( "message" )).indexOf( "Cannot have an ondate which is in the future." ) ).isGreaterThanOrEqualTo( 0 );
 	}
 }

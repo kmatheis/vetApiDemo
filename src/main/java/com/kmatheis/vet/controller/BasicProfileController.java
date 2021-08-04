@@ -11,10 +11,10 @@ import com.kmatheis.vet.entity.Profile;
 import com.kmatheis.vet.service.AuthService;
 import com.kmatheis.vet.service.ProfileService;
 
-import lombok.extern.slf4j.Slf4j;
+// import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@Slf4j
+// @Slf4j
 public class BasicProfileController implements ProfileController {
 
 	@Autowired
@@ -27,6 +27,11 @@ public class BasicProfileController implements ProfileController {
 	public List<Profile> getProfiles( String bearerJwt ) throws AuthenticationException {
 		return profileService.getProfiles( authService.bearerToJwt( bearerJwt ) );
 	}
+	
+	@Override
+	public List<Profile> getSomeProfiles( String bearerJwt, String nameContains ) throws AuthenticationException {
+		return profileService.getSomeProfiles( authService.bearerToJwt( bearerJwt ), nameContains );
+	}
 
 	@Override
 	public Profile getProfile( String bearerJwt, Long id ) throws AuthenticationException {
@@ -36,6 +41,16 @@ public class BasicProfileController implements ProfileController {
 	@Override
 	public String modifyProfile( String bearerJwt, Long id, Profile profile ) throws AuthenticationException {
 		return profileService.modifyProfile( authService.bearerToJwt( bearerJwt ), id, profile );
+	}
+
+	@Override
+	public Profile addProfile( String bearerJwt, Profile profile ) throws AuthenticationException {
+		return profileService.addProfile( authService.bearerToJwt( bearerJwt ), profile );
+	}
+
+	@Override
+	public String deleteProfile( String bearerJwt, Long id ) throws AuthenticationException {
+		return profileService.deleteProfile( authService.bearerToJwt( bearerJwt ), id );
 	}
 	
 }

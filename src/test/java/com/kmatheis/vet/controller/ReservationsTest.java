@@ -3,6 +3,7 @@ package com.kmatheis.vet.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -88,9 +89,83 @@ class ReservationsTest extends BaseTest {
 		String body = "{ \"aid\": " + aid + ", \"rid\": " + rid + ", \"fromdate\": \"" + fromdate + "\", \"todate\": \"" + todate + "\" }";
 		headers.setContentType( MediaType.APPLICATION_JSON );
 		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
-		ResponseEntity<String> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, String.class );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
 		// Then: We obtain an error.
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
 	}
 
+	@Test
+	void testAddInvalidReservationNoFromdate() {
+		// Given: rec credentials
+		// When: that rec logs in and adds a res for animal 10004 for room id 106 from 2021-03-20 to 2021-04-01
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "reservations" );
+		String body = "{ \"aid\": 10004, \"rid\": 106, \"todate\": \"2021-04-01\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: We see the reservation.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "fromdate must exist." );
+	}
+	
+	@Test
+	void testAddInvalidReservationNoTodate() {
+		// Given: rec credentials
+		// When: that rec logs in and adds a res for animal 10004 for room id 106 from 2021-03-20 to 2021-04-01
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "reservations" );
+		String body = "{ \"aid\": 10004, \"rid\": 106, \"fromdate\": \"2021-04-01\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: We see the reservation.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "todate must exist." );
+	}
+	
+	@Test
+	void testAddInvalidReservationNoAid() {
+		// Given: rec credentials
+		// When: that rec logs in and adds a res for animal 10004 for room id 106 from 2021-03-20 to 2021-04-01
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "reservations" );
+		String body = "{ \"rid\": 106, \"fromdate\": \"2021-04-01\", \"todate\": \"2021-04-04\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: We see the reservation.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "animal ID ('aid') must exist." );
+	}
+	
+	@Test
+	void testAddInvalidReservationNoRid() {
+		// Given: rec credentials
+		// When: that rec logs in and adds a res for animal 10004 for room id 106 from 2021-03-20 to 2021-04-01
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "reservations" );
+		String body = "{ \"aid\": 1001, \"fromdate\": \"2021-04-01\", \"todate\": \"2021-04-04\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: We see the reservation.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "room ID ('rid') must exist." );
+	}
+	
+	@Test
+	void testAddInvalidReservationRidTooSmall() {
+		// Given: rec credentials
+		// When: that rec logs in and adds a res for animal 10004 for room id 106 from 2021-03-20 to 2021-04-01
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "reservations" );
+		String body = "{ \"aid\": 1001, \"rid\": 0, \"fromdate\": \"2021-04-01\", \"todate\": \"2021-04-04\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: We see the reservation.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "room ID ('rid') must be positive." );
+	}
 }

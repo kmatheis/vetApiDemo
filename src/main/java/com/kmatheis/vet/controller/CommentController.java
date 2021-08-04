@@ -1,8 +1,10 @@
 package com.kmatheis.vet.controller;
 
 import javax.naming.AuthenticationException;
+import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.kmatheis.vet.entity.Animal;
 import com.kmatheis.vet.entity.Comment;
 
+@Validated
 public interface CommentController {
 	
 	// Not really going to get an individual comment since they're always looked at in the context of an animal
@@ -22,7 +25,7 @@ public interface CommentController {
 	public Animal addCommentToAid(
 			@RequestHeader( "Authorization" ) String bearerJwt, 
 			@PathVariable Long aid,
-			@RequestBody Comment comment
+			@Valid @RequestBody Comment comment
 	) throws AuthenticationException;
 	
 	@DeleteMapping( "/animals/{aid}/comments/{cid}" )

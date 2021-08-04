@@ -1,7 +1,7 @@
 # Welcome to VetApiDemo!
 This project is meant to demonstrate a backend Web API using Spring Boot (JDBC driver) and MySQL. This API models common use cases in a veterinarian's office which also boards pets while their owners are away.
 
-This project was last updated on 2021-08-03.
+This project was last updated on 2021-08-04.
 
 ## Security Features
 This demo has certain security features: each user is assigned a particular role, and each users must log in. Only hashes of passwords are stored in the database. 
@@ -41,7 +41,10 @@ The following calls are supported:
 | PUT | /users/:id | `{ "username": "bob", "password": "myotherpw", "rolename": "RECEPTIONIST" }`|
 | GET | /profiles | |
 | GET | /profiles/:id | |
+| GET | /someprofiles?namecontains= |  |
+| POST | /profiles | `{ "name": "The Dolittle Family" }` |
 | PUT | /profiles/:id | `{ "name": "The Smith Family" }` |
+| DELETE | /profiles/:id | |
 | GET | /profiles/:pid/animals | |
 | POST | /profiles/:pid/animals | `{ "name": "Rex", "species": "SUGAR_GLIDER" }` |
 | DELETE | /profiles/:pid/animals/:aid | |
@@ -72,15 +75,10 @@ The only profile property directly changeable via PUT `/profiles/:id` is `name`.
 
 ## Incompleteness
 
-This project is incomplete. The following still need to be addressed:
-- Additional erification beans should be added in a few natural places,
+This project is mostly complete. The following still need to be addressed:
 - More endpoints need OpenAPI documentation, and
 - Additional reservation date checks need to be incorporated.
 
-The unit tests, though useful, can also stand to be a little more robust. 
 These gaps will hopefully be addressed soon.
 
-Minor TODOs:
-- Provide endpoints to add and delete profiles.
-- Clean up certain error tests.
-- Some verification beans are present, but still need to add others (Owner, Reservation, Comments).
+

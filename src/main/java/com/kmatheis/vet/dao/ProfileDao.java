@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,16 +81,16 @@ public class ProfileDao {
 		return p;
 	}
 	
+	class ProfileMassResultSetExtractor implements RowMapper<Profile> {
+		@Override
+		public Profile mapRow( ResultSet rs, int rowNum ) throws SQLException {
+			return profileFromResultSet( rs );
+		}
+	}
+	
 	public List<Profile> fetchProfiles() {
 		String sql = "select * from profiles";
-		return npJdbcTemplate.query( sql, 
-				new RowMapper<Profile>() {
-					@Override
-					public Profile mapRow( ResultSet rs, int rowNum ) throws SQLException {						
-						return profileFromResultSet( rs );
-					}
-				}
-		);
+		return npJdbcTemplate.query( sql, new ProfileMassResultSetExtractor() );
 	}
 	
 	class ProfileResultSetExtractor implements ResultSetExtractor<Optional<Profile>> {
@@ -108,6 +109,13 @@ public class ProfileDao {
 		params.put( "id", id );
 		return npJdbcTemplate.query( sql, params, new ProfileResultSetExtractor() );
 	}
+	
+	public List<Profile> fetchSomeProfiles( String nameContains ) {
+		String sql = "select * from profiles where name like concat( '%', :containing, '%' ) order by id";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "containing", nameContains );
+		return npJdbcTemplate.query( sql, params, new ProfileMassResultSetExtractor() );
+	}
 
 	// ==== Updating profiles
 	
@@ -124,4 +132,34 @@ public class ProfileDao {
 		}
 	}
 
+	// ==== Adding profiles 
+	
+	public Profile addProfile( String name ) {
+		String sql = "insert into profiles ( id, name ) values ( :id, :name )";
+		Long pid = getNextProfileId();
+		Map<String, Object> params = new HashMap<>();
+		params.put( "id", pid );
+		params.put( "name", name );
+		int status = npJdbcTemplate.update( sql, params );
+		if ( status == 0 ) {
+			throw new IllegalAttemptException( "General failure to add profile." );
+		}
+		// Alternately, could rearrange to get PK and fill out the profile that way, but a db re-read gives more confidence.
+		return fetchProfileById( pid ).get();
+	}
+
+	// ==== Deleting profiles
+	
+	public String deleteProfile( Long id ) {
+		String sql = "delete from profiles where id = :id";
+		Map<String, Object> params = new HashMap<>();
+		params.put( "id", id );
+		int status = npJdbcTemplate.update( sql, params );
+		if ( status == 0 ) {
+			throw new NoSuchElementException( "General failure in deleting profile." );
+		} else {
+			return ( "Successfully deleted profile " + id );
+		}
+	}
+	
 }

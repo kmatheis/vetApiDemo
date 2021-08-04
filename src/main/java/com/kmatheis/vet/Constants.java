@@ -17,5 +17,13 @@ public class Constants {
 	public static final int ANIMALNAME_MIN_LENGTH = 3;
 	public static final int ANIMALNAME_MAX_LENGTH = 40;
 	
+	public static final int OWNERNAME_MIN_LENGTH = 3;
+	public static final int OWNERNAME_MAX_LENGTH = 40;
+	
+	public static final int OWNERPHONE_MAX_LENGTH = 40;
+	
+	public static final int COMMENT_MIN_LENGTH = 3;
+	public static final int COMMENT_MAX_LENGTH = 1000;
+	
 	private Constants() {}  // prevent instantiation
 }

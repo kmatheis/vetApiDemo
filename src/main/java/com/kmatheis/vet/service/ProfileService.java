@@ -31,11 +31,20 @@ public class ProfileService {
 		return profileDao.fetchProfiles();
 	}
 
+	public List<Profile> getSomeProfiles( String jwt, String nameContains ) throws AuthenticationException {
+		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "read profiles" ) );
+		authService.authorize( jwt, neededPrivs );
+		return profileDao.fetchSomeProfiles( nameContains );
+	}
+	
+	private Profile verifyProfile( Long id ) {
+		return profileDao.fetchProfileById( id ).orElseThrow( () -> new NoSuchElementException( "Profile with id " + id + " does not exist." ) );
+	}
+	
 	public Profile getProfile( String jwt, Long id ) throws AuthenticationException {
 		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "read profiles" ) );
 		authService.authorize( jwt, neededPrivs );
-		Profile p = profileDao.fetchProfileById( id ).orElseThrow( () -> new NoSuchElementException( "Profile with id " + id + " does not exist." ) );
-		return p;
+		return verifyProfile( id );
 	}
 
 	public String modifyProfile( String jwt, Long id, Profile profile ) throws AuthenticationException {
@@ -50,6 +59,21 @@ public class ProfileService {
 		// Going with Option (3):
 		String name = profile.getName();
 		return profileDao.modifyProfile( id, name );
+	}
+
+	public Profile addProfile( String jwt, Profile profile ) throws AuthenticationException {
+		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "add profiles" ) );
+		authService.authorize( jwt, neededPrivs );
+		
+		String name = profile.getName();
+		return profileDao.addProfile( name );
+	}
+
+	public String deleteProfile( String jwt, Long id ) throws AuthenticationException {
+		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "del profiles" ) );
+		authService.authorize( jwt, neededPrivs );
+		verifyProfile( id );
+		return profileDao.deleteProfile( id );
 	}
 	
 }

@@ -16,10 +16,10 @@ import com.kmatheis.vet.entity.Owner;
 import com.kmatheis.vet.entity.Profile;
 import com.kmatheis.vet.exception.IllegalAttemptException;
 
-import lombok.extern.slf4j.Slf4j;
+// import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Slf4j
+// @Slf4j
 public class OwnerService {
 
 	@Autowired
@@ -31,22 +31,25 @@ public class OwnerService {
 	@Autowired
 	private AuthService authService;
 	
+	private Profile verifyProfile( Long id ) {
+		return profileDao.fetchProfileById( id ).orElseThrow( () -> new NoSuchElementException( "Profile with id " + id + " does not exist." ) );
+	}
+	
 	public List<Owner> getOwnersByPid( String jwt, Long pid ) throws AuthenticationException {
 		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "read owners" ) );
 		authService.authorize( jwt, neededPrivs );
-		Profile p = profileDao.fetchProfileById( pid ).orElseThrow( () -> new NoSuchElementException( "Profile with id " + pid + " does not exist." ) );
+		Profile p = verifyProfile( pid );
 		return p.getOwners();
 	}
 
 	public Owner addOwnerToPid( String jwt, Long pid, Owner owner ) throws AuthenticationException {
 		List<String> neededPrivs = new ArrayList<String>( Arrays.asList( "add owners" ) );
 		authService.authorize( jwt, neededPrivs );
-		Profile p = profileDao.fetchProfileById( pid ).orElseThrow( () -> new NoSuchElementException( "Profile with id " + pid + " does not exist." ) );
 		
+		Profile p = verifyProfile( pid );
 		String name = owner.getName();
-		
-		if ( name == null || name.length() < 3 ) {
-			throw new IllegalAttemptException( "Owner's name must have at least 3 characters." );
+		if ( name == null ) {
+			throw new IllegalAttemptException( "Owner's name must exist." );
 		}
 		return ownerDao.addOwnerToProfile( name, owner.getPhone(), p );
 	}
@@ -74,9 +77,6 @@ public class OwnerService {
 		if ( newName == null ) {
 			newName = foundOwner.getName();
 		}
-		if ( newName.length() < 3 ) {
-			throw new IllegalAttemptException( "Owner's name must have at least 3 characters." );
-		}
 		
 		String newPhone = owner.getPhone();
 		if ( newPhone == null ) {
@@ -85,7 +85,7 @@ public class OwnerService {
 		
 		Long newpid = ( owner.getProfileId() == null ? pid : owner.getProfileId() );
 		
-		Profile newProfile = profileDao.fetchProfileById( newpid ).orElseThrow( () -> new NoSuchElementException( "Profile with id " + newpid + " does not exist." ) );  
+		Profile newProfile = verifyProfile( newpid );
 
 		return ownerDao.modifyOwner( foundOwner.getPk(), newName, newPhone, newProfile.getPk() );
 	}

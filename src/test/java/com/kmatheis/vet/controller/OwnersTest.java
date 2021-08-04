@@ -3,6 +3,7 @@ package com.kmatheis.vet.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,13 +49,13 @@ class OwnersTest extends BaseTest {
 		// When: that rec logs in and adds an owner
 		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
 		String uri = String.format( "%s/%s", getBaseUri(), "profiles/1002/owners" );
-		String body = "{ \"name\": \"Rami\", \"phone\": \"800-555-0109\" }";
+		String body = "{ \"name\": \"Rami Rami\", \"phone\": \"800-555-0109\" }";
 		headers.setContentType( MediaType.APPLICATION_JSON );
 		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
 		ResponseEntity<Owner> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, Owner.class );
 		// Then: the add is successful.
 		Owner o = response.getBody();
-		assertThat( o.getName() ).isEqualTo( "Rami" );
+		assertThat( o.getName() ).isEqualTo( "Rami Rami" );
 		assertThat( o.getProfileId() ).isEqualTo( 1002 );
 		assertThat( o.getId() ).isEqualTo( 5005 );
 	}
@@ -85,5 +86,64 @@ class OwnersTest extends BaseTest {
 		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.OK );
 		assertThat( response.getBody() ).isEqualTo( "Successfully modified owner." );
 	}
+	
+	@Test
+	void testAddOwnerWithNoName() {
+		// Given: rec credentials
+		// When: that rec logs in and adds an owner with no name
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "profiles/1002/owners" );
+		String body = "{ \"phone\": \"800-555-0109\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: the add fails.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( ( (String) response.getBody().get( "message" ) ).indexOf( "Owner's name must exist." ) ).isGreaterThanOrEqualTo( 0 );
+	}
 
+	@Test
+	void testAddOwnerWithNameTooShort() {
+		// Given: rec credentials
+		// When: that rec logs in and adds an owner with no name
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "profiles/1002/owners" );
+		String body = "{ \"name\": \"Ra\", \"phone\": \"800-555-0109\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: the add fails.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "name should have at least 3 characters." );
+	}
+	
+	@Test
+	void testAddOwnerWithNameWithBadCharacters() {
+		// Given: rec credentials
+		// When: that rec logs in and adds an owner with no name
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "profiles/1002/owners" );
+		String body = "{ \"name\": \"Ra \", \"phone\": \"800-555-0109\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.POST, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: the add fails.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "name should be just letters with possibly spaces in between." );
+	}
+	
+	@Test
+	void testModifyOwnerWithNameTooShort() {
+		// Given: rec credentials
+		// When: that rec logs in and changes an owner's name and phone number
+		HttpHeaders headers = obtainHeadersFromValidLogin( "vetrec", "vetrec" );
+		String uri = String.format( "%s/%s", getBaseUri(), "profiles/1002/owners/5004" );
+		String body = "{ \"name\": \"JT\", \"phone\": \"800-867-5309\" }";
+		headers.setContentType( MediaType.APPLICATION_JSON );
+		HttpEntity<String> bodyEntity = new HttpEntity<>( body, headers );
+		ResponseEntity<Map<String, Object>> response = getRestTemplate().exchange( uri, HttpMethod.PUT, bodyEntity, new ParameterizedTypeReference<>() {} );
+		// Then: the modification fails.
+		assertThat( response.getStatusCode() ).isEqualTo( HttpStatus.BAD_REQUEST );
+		assertThat( response.getBody().get( "message" ) ).isEqualTo( "name should have at least 3 characters." );
+	}
 }

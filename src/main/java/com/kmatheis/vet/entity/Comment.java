@@ -2,9 +2,14 @@ package com.kmatheis.vet.entity;
 
 import java.sql.Timestamp;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.Length;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.kmatheis.vet.Constants;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,8 +24,15 @@ public class Comment {
 	private Long pk;
 	private Long id;
 	private Timestamp ondate;
+	
+	@NotNull( message = "type must exist." )
 	private Type type;
+	
+	@NotNull( message = "comment must exist." )
+	@Length( min = Constants.COMMENT_MIN_LENGTH, message = "comment should have at least " + Constants.COMMENT_MIN_LENGTH + " characters." )
+	@Length( max = Constants.COMMENT_MAX_LENGTH, message = "comment should have at most " + Constants.COMMENT_MAX_LENGTH + " characters." )
 	private String comment;
+	
 	private Long animalId;
 	
 	@JsonIgnore
